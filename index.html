@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Tercih Analiz Sistemi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <style>
+        body { background: #f4f6fb; color: #222; }
+        .container { max-width: 1100px; background: #fff; padding: 32px 36px; border-radius: 14px; box-shadow: 0 2px 12px #e0e0e0; margin: 40px auto; }
+        h1 { color: #2c3e50; margin-bottom: 18px; }
+        .footer { margin-top: 30px; display: flex; align-items: center; }
+        .footer img { height: 32px; margin-right: 10px; }
+        .dropzone {
+            border: 2px dashed #1e90ff;
+            border-radius: 8px;
+            background: #f7fafd;
+            padding: 20px;
+            text-align: center;
+            color: #1e90ff;
+            font-size: 16px;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+        .dropzone.dragover { background: #e3f1ff; }
+        @media (max-width: 900px) {
+            .container { padding: 10px; }
+            table, thead, tbody, tr, th, td { font-size: 13px; }
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="d-flex flex-column align-items-center mb-4">
+            <img src="{{ url_for('static', filename='iu.logo.png') }}" alt="Işık Üniversitesi Logo" style="height:90px; max-width:400px; margin-bottom:10px;">
+            <h1>Tercih Analiz Sistemi</h1>
+        </div>
+        <form method="post" enctype="multipart/form-data" autocomplete="off">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="adsoyad" class="form-label">Öğrenci Adı Soyadı:</label>
+                    <input type="text" name="adsoyad" value="{{ adsoyad }}" required class="form-control">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4 col-12 mb-2">
+                    <label for="puan" class="form-label">Sıralama</label>
+                    <input type="number" id="puan" class="form-control" min="1">
+                </div>
+                <div class="col-md-3 col-12 mb-2">
+                    <label for="tur" class="form-label">Puan Türü</label>
+                    <select id="tur" class="form-select">
+                        <option value="SAY">SAY</option>
+                        <option value="EA">EA</option>
+                        <option value="SÖZ">SÖZ</option>
+                        <option value="TYT">TYT</option>
+                    </select>
+                </div>
+                <div class="col-md-3 col-12 mb-2">
+                    <label for="sinir" class="form-label">Sınır</label>
+                    <input type="number" id="sinir" class="form-control" min="0">
+                </div>
+                <div class="col-md-2 col-12 d-flex align-items-end mb-2">
+                    <button type="button" class="btn btn-success w-100" onclick="eklePuan()">Ekle</button>
+                </div>
+            </div>
+            <table class="table table-bordered align-middle" style="margin-top:10px;margin-bottom:18px;">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sıralama</th>
+                        <th>Puan Türü</th>
+                        <th>Sınır</th>
+                        <th>Sil</th>
+                    </tr>
+                </thead>
+                <tbody id="eklenenler_body"></tbody>
+            </table>
+            <input type="hidden" name="eklenenler" id="eklenenler_json">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div id="veri_dropzone" class="dropzone">Veri Dosyasını Sürükleyip Bırakın veya Tıklayın</div>
+                    <input type="file" name="veri_dosya" id="veri_dosya" accept=".xlsx" style="display:none;">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Analiz Et</button>
+                </div>
+            </div>
+        </form>
+        {% if result %}
+            <div style="margin-top:18px; font-size:16px; color:#1e90ff;"><b>Analiz Sonuçları</b></div>
+            <form method="get" action="/indir" target="_blank">
+                <button type="submit" class="btn btn-success mb-2">Excel Olarak İndir</button>
+            </form>
+            <div style="max-height:340px; overflow-y:auto; border-radius:10px; border:1px solid #e0e0e0; margin-bottom:16px; background:#f8fafc;">
+                <table id="sonucTablo" class="display" style="width:100%;">
+                    <thead>
+                        <tr>
+                            {% for key, label in tablo_basliklari %}
+                            <th>{{ label }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in result %}
+                        <tr>
+                            {% for key, label in tablo_basliklari %}
+                            <td>{{ row[key] }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <script>
+            $(document).ready(function() {
+                $('#sonucTablo').DataTable({
+                    "paging": true,
+                    "searching": true,
+                    "ordering": true,
+                    "info": true,
+                    "responsive": true,
+                    "language": {
+                        "url": "//cdn.datatables.net/plug-ins/1.13.4/i18n/tr.json"
+                    }
+                });
+            });
+            </script>
+            {% if result|length > 5 %}
+                <div style="font-size:12px;color:#888;">Tablo kaydırılabilir, tüm satırları görmek için kaydırın.</div>
+            {% endif %}
+        {% endif %}
+        <div class="footer">
+            <img src="/static/mesela.png" alt="logo">
+            <span>Işık Üniversitesi Öğrenci İşleri Daire Başkanlığı</span>
+        </div>
+    </div>
+    <script>
+        let eklenenler = {{ eklenenler|tojson|safe }};
+        function eklePuan() {
+            const puan = document.getElementById('puan').value;
+            const tur = document.getElementById('tur').value;
+            const sinir = document.getElementById('sinir').value;
+            if (!puan || !tur || !sinir) {
+                alert("Tüm alanları doldurun.");
+                return;
+            }
+            eklenenler.push({puan, tur, sinir});
+            guncelleTablo();
+            document.getElementById('puan').value = '';
+            document.getElementById('tur').selectedIndex = 0;
+            document.getElementById('sinir').value = '';
+        }
+        function silPuan(idx) {
+            eklenenler.splice(idx, 1);
+            guncelleTablo();
+        }
+        function guncelleTablo() {
+            let html = '';
+            for (let i = 0; i < eklenenler.length; i++) {
+                const e = eklenenler[i];
+                html += `<tr>
+                    <td>${e.puan}</td>
+                    <td>${e.tur}</td>
+                    <td>${e.sinir}</td>
+                    <td><button type="button" class="btn btn-danger btn-sm" onclick="silPuan(${i})">Sil</button></td>
+                </tr>`;
+            }
+            document.getElementById('eklenenler_body').innerHTML = html;
+            document.getElementById('eklenenler_json').value = JSON.stringify(eklenenler);
+        }
+        window.onload = function() { guncelleTablo(); }
+
+        // Sürükle bırak dosya yükleme
+        function setupDropzone(id, inputId) {
+            const dz = document.getElementById(id);
+            const input = document.getElementById(inputId);
+            dz.addEventListener('click', () => input.click());
+            dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
+            dz.addEventListener('dragleave', () => { dz.classList.remove('dragover'); });
+            dz.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dz.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) {
+                    input.files = e.dataTransfer.files;
+                    dz.innerText = e.dataTransfer.files[0].name;
+                }
+            });
+            input.addEventListener('change', () => {
+                if (input.files.length > 0) {
+                    dz.innerText = input.files[0].name;
+                }
+            });
+        }
+        setupDropzone('veri_dropzone', 'veri_dosya');
+    </script>
+</body>
+</html>
