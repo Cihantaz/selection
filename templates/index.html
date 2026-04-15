@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Tercih Analiz Sistemi</title>
+    <title>TercihRobotu</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
     <style>
@@ -57,7 +57,7 @@
     <div class="container">
         <div class="d-flex flex-column align-items-center mb-4">
             <div class="brand-badge" aria-label="Işık Üniversitesi">IŞIK</div>
-            <h1>Tercih Analiz Sistemi</h1>
+            <h1>TercihRobotu</h1>
         </div>
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
@@ -127,7 +127,7 @@
             </div>
         </form>
         {% if result %}
-            <div style="margin-top:18px; font-size:16px; color:#1e90ff;"><b>Analiz Sonuçları</b></div>
+            <div style="margin-top:18px; font-size:16px; color:#1e90ff;"><b>TercihRobotu Sonuçları</b></div>
             <form method="get" action="/indir" target="_blank">
                 <button type="submit" class="btn btn-success mb-2">Excel Olarak İndir</button>
             </form>

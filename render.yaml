@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: selection-project2
+    name: tercihrobotu
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn --bind 0.0.0.0:$PORT banuhnm:app
