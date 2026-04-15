@@ -5,7 +5,7 @@ import pandas as pd
 from flask import Flask, render_template, request, send_file, flash, session
 
 app = Flask(__name__)
-app.secret_key = "exam_secret_key"
+app.secret_key = os.environ.get("SECRET_KEY", "exam_secret_key")
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -47,16 +47,24 @@ def etiketle(ogr_siralama, taban, z_riskli):
 
 def analiz_yap(df, eklenenler):
     result = []
+    print("\n=== ANALIZ BAŞLADI ===")
+    print("Excel dosyasındaki Sütunlar:", list(df.columns))
+    print("Toplam Satır Sayısı:", len(df))
+    print("Gelen Parametreler:", eklenenler)
+    
     for p in eklenenler:
+        print(f"\n--- Parametre: {p} ---")
         ogr_siralama_int = temizle_sayi(p["puan"])
         sinir_int = temizle_sayi(p["sinir"])
         riskli_t_int = temizle_sayi(p.get("riskli_t", 0))
         z = ogr_siralama_int - sinir_int
         z_riskli = z - riskli_t_int if riskli_t_int else None
+        print(f"Öğrenci Sıralama: {ogr_siralama_int}, Sınır: {sinir_int}, Z: {z}, Z_Riskli: {z_riskli}")
 
         df_filtered = df.copy()
         if p["tur"] and 'Puan Türü' in df_filtered.columns:
             df_filtered = df_filtered[df_filtered['Puan Türü'].astype(str).str.strip().str.upper() == p["tur"]]
+            print(f"Puan Türü '{p['tur']}' ile filtreleme sonrası: {len(df_filtered)} satır")
 
         bos_veya_eksi_bolumler = []
         if 'En Düşük Sıralama' in df_filtered.columns:
@@ -68,9 +76,12 @@ def analiz_yap(df, eklenenler):
                 return x_sayi > (z_riskli if z_riskli is not None else z)
 
             df_filtered_main = df_filtered[df_filtered['En Düşük Sıralama'].apply(kontrol_et)]
+            print(f"Sıralama > {z_riskli if z_riskli is not None else z} ile filtreleme sonrası: {len(df_filtered_main)} satır")
             bos_veya_eksi_bolumler = df_filtered[df_filtered['En Düşük Sıralama'].apply(lambda x: pd.isna(x) or str(x).strip() in ["", "-"])]
+            print(f"Boş/Eksi satırlar: {len(bos_veya_eksi_bolumler)} satır")
         else:
             df_filtered_main = df_filtered
+            print("'En Düşük Sıralama' sütunu bulunamadı!")
 
         for _, row in df_filtered_main.iterrows():
             program_adi = str(row.get('Program Adı', '')).strip()
@@ -84,7 +95,6 @@ def analiz_yap(df, eklenenler):
             if ucret:
                 try:
                     ucret_num = float(str(ucret).replace('.', '').replace(',', '').replace('₺', '').strip())
-                    # 3.5 uyumlu
                     ucret = "{:,.0f}".format(ucret_num).replace(",", ".") + " TL"
                 except:
                     ucret = str(ucret) + " TL"
@@ -124,7 +134,6 @@ def analiz_yap(df, eklenenler):
             dil = "EN" if "(ingilizce)" in program_adi.lower() else "TR"
             etiket = etiketle(ogr_siralama_int, row.get('En Düşük Sıralama', 0), z_riskli)
 
-            # Python 3.5'te dictionary comprehension ve any fonksiyonu çalışır
             if not any(r['bolum_adi'] == program_adi and r['taban_siralama'] == row.get('En Düşük Sıralama', '') for r in result):
                 result.append({
                     "bolum_adi": program_adi,
@@ -141,8 +150,11 @@ def analiz_yap(df, eklenenler):
                     "parametre": "{}/ {}/ {}".format(p["tur"], p["puan"], p["sinir"])
                 })
 
+    print(f"\nToplam Sonuç Sayısı: {len(result)}")
     if not result:
+        print("HATA: Hiç sonuç bulunamadı!")
         result = [{"bolum_adi": "Sonuç bulunamadı"}]
+    print("=== ANALIZ BITTI ===\n")
     return result
 
 @app.route("/", methods=["GET", "POST"])
@@ -170,6 +182,8 @@ def index():
             flash("Excel dosyası yükleyin.", "danger")
         else:
             try:
+                print("Gelen JSON Verisi:", request.form.get("eklenenler"))
+                print("Dönüştürülen Liste:", eklenenler)
                 df = pd.read_excel(file)
                 df.columns = df.columns.str.strip()
                 result = analiz_yap(df, eklenenler)
@@ -206,4 +220,5 @@ def indir():
         return render_template("index.html", adsoyad="", eklenenler=[], result=None, tablo_basliklari=TABLO_BASLIKLARI)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
