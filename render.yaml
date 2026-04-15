@@ -3,7 +3,7 @@ services:
     name: tercihrobotu
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --bind 0.0.0.0:$PORT banuhnm:app
+    startCommand: gunicorn --bind 0.0.0.0:$PORT tercihrobotu:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.8

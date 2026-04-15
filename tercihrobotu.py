@@ -95,6 +95,7 @@ def analiz_yap(df, eklenenler):
             if ucret:
                 try:
                     ucret_num = float(str(ucret).replace('.', '').replace(',', '').replace('₺', '').strip())
+                    # 3.5 uyumlu
                     ucret = "{:,.0f}".format(ucret_num).replace(",", ".") + " TL"
                 except:
                     ucret = str(ucret) + " TL"
@@ -134,6 +135,7 @@ def analiz_yap(df, eklenenler):
             dil = "EN" if "(ingilizce)" in program_adi.lower() else "TR"
             etiket = etiketle(ogr_siralama_int, row.get('En Düşük Sıralama', 0), z_riskli)
 
+            # Python 3.5'te dictionary comprehension ve any fonksiyonu çalışır
             if not any(r['bolum_adi'] == program_adi and r['taban_siralama'] == row.get('En Düşük Sıralama', '') for r in result):
                 result.append({
                     "bolum_adi": program_adi,
