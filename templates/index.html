@@ -36,6 +36,7 @@
         <div class="d-flex flex-column align-items-center mb-4">
             <img src="{{ url_for('static', filename='iu.logo.png') }}" alt="Işık Üniversitesi Logo" style="height:90px; max-width:400px; margin-bottom:10px;">
             <h1>TercihRobotu</h1>
+            <a href="{{ url_for('kullanim_klavuzu') }}" target="_blank" class="btn btn-outline-primary btn-sm">Kullanim Kilavuzu</a>
         </div>
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
