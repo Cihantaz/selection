@@ -10,29 +10,7 @@
         .container { max-width: 1100px; background: #fff; padding: 32px 36px; border-radius: 14px; box-shadow: 0 2px 12px #e0e0e0; margin: 40px auto; }
         h1 { color: #2c3e50; margin-bottom: 18px; }
         .footer { margin-top: 30px; display: flex; align-items: center; }
-        .brand-badge, .footer-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            color: #1e90ff;
-            background: #eaf4ff;
-            border: 1px solid #b8d9ff;
-            border-radius: 999px;
-        }
-        .brand-badge {
-            min-width: 96px;
-            height: 96px;
-            margin-bottom: 10px;
-        }
-        .footer-badge {
-            min-width: 32px;
-            height: 32px;
-            margin-right: 10px;
-            padding: 0 10px;
-            font-size: 12px;
-        }
+        .footer img { height: 32px; margin-right: 10px; }
         .dropzone {
             border: 2px dashed #1e90ff;
             border-radius: 8px;
@@ -56,7 +34,7 @@
 <body>
     <div class="container">
         <div class="d-flex flex-column align-items-center mb-4">
-            <div class="brand-badge" aria-label="Işık Üniversitesi">IŞIK</div>
+            <img src="{{ url_for('static', filename='iu.logo.png') }}" alt="Işık Üniversitesi Logo" style="height:90px; max-width:400px; margin-bottom:10px;">
             <h1>TercihRobotu</h1>
         </div>
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -170,7 +148,7 @@
             {% endif %}
         {% endif %}
         <div class="footer">
-            <div class="footer-badge" aria-hidden="true">IU</div>
+            <img src="{{ url_for('static', filename='mesale.png') }}" alt="logo">
             <span>Işık Üniversitesi Öğrenci İşleri Daire Başkanlığı</span>
         </div>
     </div>
@@ -213,6 +191,7 @@
         }
         window.onload = function() { guncelleTablo(); }
 
+        // Sürükle bırak dosya yükleme
         function setupDropzone(id, inputId) {
             const dz = document.getElementById(id);
             const input = document.getElementById(inputId);
