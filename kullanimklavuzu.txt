@@ -1,0 +1,133 @@
+===============================================
+         TERCİH ROBOTU - KULLANIM KILAVUZU
+===============================================
+
+Bu doküman, Tercih Robotu'nun hesaplama mantığını ve 
+örnek senaryoları açıklar.
+
+===============================================
+1. TEMEL KAVRAMLAR
+===============================================
+
+- Ogr_Siralama : Öğrencinin YKS sıralaması
+- Sınır        : Öğrencinin kaç sıra geriye gidebileceği
+- Riskli T     : Ekstra risk toleransı (opsiyonel)
+- Z            : Hesaplanan temel sınır değeri
+- Z_Riskli     : Risk toleransı eklenmiş sınır değeri
+
+FORMÜLLER:
+-----------
+Z = Ogr_Siralama - Sınır
+Z_Riskli = Z - Riskli_T
+
+===============================================
+2. ETIKETLEME MANTIĞI
+===============================================
+
+🟢 UYGUN   : Bölüm Taban Sıralaması ≥ Ogr_Siralama
+              (Öğrenci kesin girer)
+
+🟡 RİSKLİ  : Z_Riskli ≤ Bölüm Taban Sıralaması < Ogr_Siralama
+              (Risk alınabilir, denenebilir)
+
+🔴 UYGUNSUZ: Z < Bölüm Taban Sıralaması < Z_Riskli
+              (Çok riskli ama listelenir)
+
+❌ LİSTELENMEZ: Bölüm Taban Sıralaması ≤ Z_Riskli
+              (Filtrelenir, görünmez)
+
+===============================================
+3. ÖRNEK SENARYOLAR
+===============================================
+
+------------------------------------------------
+SENARYO 1: Sınır = 0, Riskli T = 5000
+------------------------------------------------
+Öğrenci: 100.000 sıralamalı SAY öğrencisi
+
+HESAPLAMA:
+Z = 100.000 - 0 = 100.000
+Z_Riskli = 100.000 - 5.000 = 95.000
+
+SONUÇLAR:
+- Bölüm Sıralaması 100.000+  → 🟢 Uygun
+- Bölüm Sıralaması 95.000-99.999 → 🟡 Riskli
+- Bölüm Sıralaması 95.000 altı → ❌ Listelenmez
+
+ÖRNEK ÇIKTI:
+┌─────────────────────────┬──────────┬──────────┐
+│ Bölüm                   │ Sıralama │ Etiket   │
+├─────────────────────────┼──────────┼──────────┤
+│ Bilgisayar Müh.         │ 105.000  │ 🟢 Uygun │
+│ Elektrik-Elektronik     │ 98.000   │ 🟡 Riskli│
+│ Makine Müh.             │ 96.500   │ 🟡 Riskli│
+│ İnşaat Müh.             │ 94.000   │ ❌ Yok   │
+└─────────────────────────┴──────────┴──────────┘
+
+------------------------------------------------
+SENARYO 2: Sınır = 25000, Riskli T = 5000
+------------------------------------------------
+Öğrenci: 100.000 sıralamalı SAY öğrencisi
+
+HESAPLAMA:
+Z = 100.000 - 25.000 = 75.000
+Z_Riskli = 75.000 - 5.000 = 70.000
+
+SONUÇLAR:
+- Bölüm Sıralaması 100.000+  → 🟢 Uygun
+- Bölüm Sıralaması 75.000-99.999 → 🟡 Riskli
+- Bölüm Sıralaması 70.001-74.999 → 🔴 Uygunsuz
+- Bölüm Sıralaması 70.000 altı → ❌ Listelenmez
+
+ÖRNEK ÇIKTI:
+┌─────────────────────────┬──────────┬────────────┐
+│ Bölüm                   │ Sıralama │ Etiket     │
+├─────────────────────────┼──────────┼────────────┤
+│ Yazılım Müh.            │ 110.000  │ 🟢 Uygun   │
+│ Endüstri Müh.           │ 85.000   │ 🟡 Riskli  │
+│ Elektrik-Elektronik     │ 78.000   │ 🟡 Riskli  │
+│ Makine Müh.             │ 72.000   │ 🔴 Uygunsuz│
+│ İnşaat Müh.             │ 68.000   │ ❌ Yok     │
+└─────────────────────────┴──────────┴────────────┘
+
+===============================================
+4. İKİ SENARYONUN KARŞILAŞTIRMASI
+===============================================
+
+                    │ Senaryo 1 │ Senaryo 2
+────────────────────┼───────────┼───────────
+Sınır               │     0     │   25.000
+Z Değeri            │  100.000  │   75.000
+Z_Riskli Değeri     │   95.000  │   70.000
+Görünür Aralık      │   95.000+ │   70.000+
+Uygun Aralık        │  100.000+ │  100.000+
+Riskli Aralık       │95K-99.999 │75K-99.999
+Uygunsuz (görünür)  │    Yok    │70K-74.999
+
+NOT: Sınır değeri arttıkça daha geniş bir sıralama
+aralığı listelenir. Ancak düşük sıralamalı bölümler
+"Uygunsuz" olarak işaretlenir.
+
+===============================================
+5. KULLANIM TAVSİYELERİ
+===============================================
+
+1. SINIR = 0 kullanın:
+   - Sadece gerçekten şanslı olabileceğiniz bölümleri görmek
+   - Konservatif bir liste istiyorsanız
+   - Risk almak istemiyorsanız
+
+2. SINIR > 0 kullanın:
+   - Daha geniş bir perspektif görmek
+   - "Belki olur" dediğiniz bölümleri de incelemek
+   - Tüm alternatifleri değerlendirmek
+
+3. RİSKLİ T kullanımı:
+   - 0: Risk kategorisi olmadan net liste
+   - 5000-10000: Makul risk toleransı
+   - 20000+: Agresif risk (dikkatli kullanın!)
+
+===============================================
+Hazırlayan: Tercih Robotu
+Tarih: 2026
+===============================================
