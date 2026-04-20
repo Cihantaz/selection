@@ -11,18 +11,6 @@
         h1 { color: #2c3e50; margin-bottom: 18px; }
         .footer { margin-top: 30px; display: flex; align-items: center; }
         .footer img { height: 32px; margin-right: 10px; }
-        .dropzone {
-            border: 2px dashed #1e90ff;
-            border-radius: 8px;
-            background: #f7fafd;
-            padding: 20px;
-            text-align: center;
-            color: #1e90ff;
-            font-size: 16px;
-            margin-bottom: 16px;
-            cursor: pointer;
-        }
-        .dropzone.dragover { background: #e3f1ff; }
         @media (max-width: 900px) {
         .container { padding: 10px; }
             table, thead, tbody, tr, th, td { font-size: 13px; }
@@ -47,7 +35,7 @@
             </div>
           {% endif %}
         {% endwith %}
-        <form method="post" enctype="multipart/form-data" autocomplete="off">
+        <form method="post" autocomplete="off">
             <div class="row mb-3">
                 <div class="col-12">
                     <label for="adsoyad" class="form-label">Öğrenci Adı Soyadı:</label>
@@ -95,8 +83,9 @@
             <input type="hidden" name="eklenenler" id="eklenenler_json">
             <div class="row mb-3">
                 <div class="col-12">
-                    <div id="veri_dropzone" class="dropzone">Veri Dosyasını Sürükleyip Bırakın veya Tıklayın</div>
-                    <input type="file" name="veri_dosya" id="veri_dosya" accept=".xlsx" style="display:none;">
+                    <div class="alert alert-secondary mb-0">
+                        Veri kaynagi: <strong>{{ veri_dosyasi_adi }}</strong>
+                    </div>
                 </div>
             </div>
             <div class="row mb-3">
@@ -192,28 +181,7 @@
         }
         window.onload = function() { guncelleTablo(); }
 
-        // Sürükle bırak dosya yükleme
-        function setupDropzone(id, inputId) {
-            const dz = document.getElementById(id);
-            const input = document.getElementById(inputId);
-            dz.addEventListener('click', () => input.click());
-            dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
-            dz.addEventListener('dragleave', () => { dz.classList.remove('dragover'); });
-            dz.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dz.classList.remove('dragover');
-                if (e.dataTransfer.files.length > 0) {
-                    input.files = e.dataTransfer.files;
-                    dz.innerText = e.dataTransfer.files[0].name;
-                }
-            });
-            input.addEventListener('change', () => {
-                if (input.files.length > 0) {
-                    dz.innerText = input.files[0].name;
-                }
-            });
-        }
-        setupDropzone('veri_dropzone', 'veri_dosya');
+
     </script>
 </body>
 </html>

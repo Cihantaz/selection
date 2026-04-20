@@ -8,6 +8,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "exam_secret_key")
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+DATA_FILE_PATH = os.environ.get("DATA_FILE_PATH", os.path.join(app.root_path, "data", "23_24_isik.xlsx"))
 
 TABLO_BASLIKLARI = [
     ("bolum_adi", "Bölüm Adı"),
@@ -44,6 +45,14 @@ def etiketle(ogr_siralama, taban, z_riskli):
         return "Riskli"
     else:
         return "Uygunsuz"
+
+def veri_dosyasini_oku():
+    if not os.path.exists(DATA_FILE_PATH):
+        raise FileNotFoundError("Veri dosyasi bulunamadi: {}".format(DATA_FILE_PATH))
+
+    df = pd.read_excel(DATA_FILE_PATH)
+    df.columns = df.columns.str.strip()
+    return df
 
 def analiz_yap(df, eklenenler):
     result = []
@@ -166,6 +175,7 @@ def index():
     talep_bolum = ""
     result = None
     tablo_basliklari = TABLO_BASLIKLARI
+    veri_dosyasi_adi = os.path.basename(DATA_FILE_PATH)
 
     if request.method == "POST":
         adsoyad_ve_bolum = request.form.get("adsoyad", "")
@@ -179,25 +189,20 @@ def index():
         except:
             eklenenler = []
 
-        file = request.files.get("veri_dosya")
-        if not file or file.filename == "":
-            flash("Excel dosyası yükleyin.", "danger")
-        else:
-            try:
-                print("Gelen JSON Verisi:", request.form.get("eklenenler"))
-                print("Dönüştürülen Liste:", eklenenler)
-                df = pd.read_excel(file)
-                df.columns = df.columns.str.strip()
-                result = analiz_yap(df, eklenenler)
-                session["analiz_df"] = result
-                session["adsoyad"] = adsoyad
-                session["talep_bolum"] = talep_bolum
-            except Exception as e:
-                flash("Excel okuma hatası: {}".format(e), "danger")
+        try:
+            print("Gelen JSON Verisi:", request.form.get("eklenenler"))
+            print("Donusturulen Liste:", eklenenler)
+            df = veri_dosyasini_oku()
+            result = analiz_yap(df, eklenenler)
+            session["analiz_df"] = result
+            session["adsoyad"] = adsoyad
+            session["talep_bolum"] = talep_bolum
+        except Exception as e:
+            flash("Veri dosyasi okunamadi: {}".format(e), "danger")
 
-        return render_template("index.html", adsoyad=adsoyad_ve_bolum, eklenenler=eklenenler, result=result, tablo_basliklari=tablo_basliklari)
+        return render_template("index.html", adsoyad=adsoyad_ve_bolum, eklenenler=eklenenler, result=result, tablo_basliklari=tablo_basliklari, veri_dosyasi_adi=veri_dosyasi_adi)
 
-    return render_template("index.html", adsoyad="", eklenenler=[], result=None, tablo_basliklari=tablo_basliklari)
+    return render_template("index.html", adsoyad="", eklenenler=[], result=None, tablo_basliklari=tablo_basliklari, veri_dosyasi_adi=veri_dosyasi_adi)
 
 @app.route("/indir")
 def indir():
@@ -219,7 +224,7 @@ def indir():
         return send_file(output, as_attachment=True, download_name=dosya_adi, mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     else:
         flash("Önce analiz yapmalısınız.", "warning")
-        return render_template("index.html", adsoyad="", eklenenler=[], result=None, tablo_basliklari=TABLO_BASLIKLARI)
+        return render_template("index.html", adsoyad="", eklenenler=[], result=None, tablo_basliklari=TABLO_BASLIKLARI, veri_dosyasi_adi=os.path.basename(DATA_FILE_PATH))
 
 @app.route("/kullanimklavuzu")
 def kullanim_klavuzu():
