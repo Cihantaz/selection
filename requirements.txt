@@ -1,7 +1,6 @@
 Flask
-pandas
-xlsxwriter
-google-generativeai
-werkzeug
 gunicorn
 openpyxl
+pandas
+werkzeug
+xlsxwriter

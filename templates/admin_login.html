@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TercihRobotu Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background:
+                radial-gradient(circle at top left, rgba(13, 107, 159, 0.12), transparent 30%),
+                linear-gradient(180deg, #f3f7fb 0%, #e9f0f7 100%);
+        }
+        .login-card {
+            width: min(100%, 430px);
+            background: #fff;
+            border-radius: 22px;
+            padding: 28px;
+            border: 1px solid rgba(32, 48, 71, 0.08);
+            box-shadow: 0 18px 40px rgba(17, 38, 64, 0.08);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h1 class="h3 mb-2">Admin Paneli</h1>
+        <p class="text-secondary mb-4">Loglar&#305;, veri kayna&#287;&#305;n&#305; ve rapor trafi&#287;ini buradan izlersiniz.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-3">
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} mb-2">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="post" class="d-grid gap-3">
+            <div>
+                <label for="username" class="form-label">Kullan&#305;c&#305; Ad&#305;</label>
+                <input type="text" id="username" name="username" class="form-control" required>
+            </div>
+            <div>
+                <label for="password" class="form-label">&#350;ifre</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-dark">Giri&#351; Yap</button>
+        </form>
+
+        <div class="mt-3">
+            <a href="{{ url_for('index') }}" class="btn btn-link px-0">Ana sayfaya d&ouml;n</a>
+        </div>
+    </div>
+</body>
+</html>

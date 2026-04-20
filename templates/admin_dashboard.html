@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TercihRobotu Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(180deg, #eff4fa 0%, #e5edf5 100%);
+            color: #1c2d41;
+        }
+        .dashboard {
+            max-width: 1320px;
+            margin: 28px auto;
+            padding: 0 16px 32px;
+        }
+        .hero {
+            background: linear-gradient(135deg, #14395d 0%, #0d6b9f 100%);
+            color: #fff;
+            border-radius: 26px;
+            padding: 28px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 40px rgba(20, 57, 93, 0.18);
+        }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .metric-card,
+        .panel {
+            background: #fff;
+            border: 1px solid rgba(28, 45, 65, 0.08);
+            border-radius: 20px;
+            padding: 18px;
+            box-shadow: 0 14px 26px rgba(28, 45, 65, 0.05);
+        }
+        .metric-label {
+            display: block;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #6f8297;
+            margin-bottom: 8px;
+        }
+        .metric-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+        .table-wrap {
+            overflow: auto;
+        }
+        .panel-title {
+            margin-bottom: 14px;
+            font-size: 1rem;
+            font-weight: 800;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="hero d-flex flex-wrap justify-content-between gap-3 align-items-end">
+            <div>
+                <h1 class="h2 mb-2">TercihRobotu Admin</h1>
+                <p class="mb-0 text-white-50">Aktif veri setini, rapor trafi&#287;ini ve sistem loglar&#305;n&#305; buradan y&ouml;netirsiniz.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('index') }}" class="btn btn-light btn-sm">Ana Sayfa</a>
+                <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-light btn-sm">Oturumu Kapat</a>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-3">
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} mb-2">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="metric-grid">
+            <div class="metric-card">
+                <span class="metric-label">Toplam Analiz</span>
+                <div class="metric-value">{{ metrics.total_analyses }}</div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Bug&uuml;n</span>
+                <div class="metric-value">{{ metrics.analyses_today }}</div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Toplam &#304;ndirme</span>
+                <div class="metric-value">{{ metrics.total_downloads }}</div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Hata Kayd&#305;</span>
+                <div class="metric-value">{{ metrics.total_errors }}</div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Ortalama S&uuml;re</span>
+                <div class="metric-value">{{ "%.0f"|format(metrics.avg_duration_ms) }} ms</div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-lg-6">
+                <div class="panel h-100">
+                    <div class="panel-title">Aktif Veri Seti</div>
+                    <form method="post" class="row g-2 align-items-end">
+                        <input type="hidden" name="action" value="set_data_file">
+                        <div class="col-md-8">
+                            <label class="form-label">Se&ccedil;ili veri dosyas&#305;</label>
+                            <select class="form-select" name="active_data_file">
+                                {% for item in available_data_files %}
+                                <option value="{{ item }}" {% if item == active_data_file %}selected{% endif %}>{{ item }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-grid">
+                            <button type="submit" class="btn btn-primary">Kaydet</button>
+                        </div>
+                    </form>
+                    <div class="mt-3 small text-secondary">
+                        Cache: <strong>{{ cache_status.path or 'yok' }}</strong><br>
+                        Sat&#305;r: <strong>{{ cache_status.row_count }}</strong><br>
+                        Y&uuml;klenme: <strong>{{ cache_status.loaded_at or 'hen&uuml;z yok' }}</strong>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                        <form method="post">
+                            <input type="hidden" name="action" value="refresh_cache">
+                            <button type="submit" class="btn btn-outline-dark btn-sm">Cache Yenile</button>
+                        </form>
+                        <form method="post">
+                            <input type="hidden" name="action" value="cleanup">
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">Eski Kay&#305;tlar&#305; Temizle</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="panel h-100">
+                    <div class="panel-title">Sistem Notlar&#305;</div>
+                    <ul class="mb-3">
+                        <li>Veri dosyas&#305; Excel cache ile bellekte tutulur; her istekte yeniden okunmaz.</li>
+                        <li>Rapor sonu&ccedil;lar&#305; art&#305;k cookie yerine veritaban&#305;nda saklan&#305;r.</li>
+                        <li>&#304;ndirmeler rapor kimli&#287;i ile tekrar &uuml;retilir ve loglan&#305;r.</li>
+                        <li>Log saklama: {{ log_retention_days }} g&uuml;n, rapor saklama: {{ report_retention_days }} g&uuml;n.</li>
+                    </ul>
+                    <div class="small text-secondary">
+                        Veritaban&#305; yolu: <strong>{{ database_path }}</strong><br>
+                        Admin ortam&#305; haz&#305;r: <strong>{{ 'evet' if admin_credentials_ready else 'hayir' }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="panel">
+                    <div class="panel-title">Son Analizler</div>
+                    <div class="table-wrap">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Zaman</th>
+                                    <th>Rapor</th>
+                                    <th>&Ouml;&#287;renci</th>
+                                    <th>Sonu&ccedil;</th>
+                                    <th>S&uuml;re</th>
+                                    <th>Kaynak</th>
+                                    <th>Durum</th>
+                                    <th>&#304;ndirme</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in metrics.recent_analyses %}
+                                <tr>
+                                    <td>{{ row.created_at }}</td>
+                                    <td><a href="{{ url_for('rapor', analysis_id=row.id) }}" target="_blank">{{ row.id[:8] }}</a></td>
+                                    <td>{{ row.student_input }}</td>
+                                    <td>{{ row.result_count }}</td>
+                                    <td>{{ row.duration_ms }} ms</td>
+                                    <td>{{ row.source_file }}</td>
+                                    <td>{{ row.status }}</td>
+                                    <td>{{ row.download_count }}</td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="8" class="text-secondary">Hen&uuml;z analiz yok.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="panel h-100">
+                    <div class="panel-title">Son &#304;ndirmeler</div>
+                    <div class="table-wrap">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Zaman</th>
+                                    <th>Rapor</th>
+                                    <th>Dosya</th>
+                                    <th>Sat&#305;r</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in metrics.recent_downloads %}
+                                <tr>
+                                    <td>{{ row.created_at }}</td>
+                                    <td><a href="{{ url_for('rapor', analysis_id=row.analysis_id) }}" target="_blank">{{ row.analysis_id[:8] }}</a></td>
+                                    <td>{{ row.filename }}</td>
+                                    <td>{{ row.row_count }}</td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="4" class="text-secondary">Hen&uuml;z indirme yok.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="panel h-100">
+                    <div class="panel-title">Son Loglar</div>
+                    <div class="table-wrap">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Zaman</th>
+                                    <th>Seviye</th>
+                                    <th>Tip</th>
+                                    <th>Mesaj</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in metrics.recent_logs %}
+                                <tr>
+                                    <td>{{ row.created_at }}</td>
+                                    <td>{{ row.level }}</td>
+                                    <td>{{ row.event_type }}</td>
+                                    <td>{{ row.message }}</td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="4" class="text-secondary">Hen&uuml;z log yok.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

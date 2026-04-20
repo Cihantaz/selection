@@ -3,9 +3,17 @@ services:
     name: tercihrobotu
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --bind 0.0.0.0:$PORT tercihrobotu:app
+    startCommand: gunicorn tercihrobotu:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.8
       - key: SECRET_KEY
         generateValue: true
+      - key: DATABASE_PATH
+        value: instance/tercihrobotu.db
+      - key: REPORT_RETENTION_DAYS
+        value: 30
+      - key: LOG_RETENTION_DAYS
+        value: 60
+      - key: MAX_PARAMETER_COUNT
+        value: 12
