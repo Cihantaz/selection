@@ -20,7 +20,7 @@ TABLO_BASLIKLARI = [
     ("ucret", "Ücret"),
     ("dil", "Dil"),
     ("etiket", "Etiket"),
-    ("riskli_t", "Riskli T"),
+    ("riskli_t", "Riskli S?n?r"),
     ("z_riskli", "Z Riskli"),
     ("parametre", "Parametre"),
 ]
