@@ -11,14 +11,14 @@ Bu doküman, Tercih Robotu'nun hesaplama mantığını ve
 
 - Ogr_Siralama : Öğrencinin YKS sıralaması
 - Sınır        : Öğrencinin kaç sıra geriye gidebileceği
-- Riskli S?n?r     : Ekstra risk toleransı (opsiyonel)
+- Riskli Sınır     : Ekstra risk toleransı (opsiyonel)
 - Z            : Hesaplanan temel sınır değeri
 - Z_Riskli     : Risk toleransı eklenmiş sınır değeri
 
 FORMÜLLER:
 -----------
 Z = Ogr_Siralama - Sınır
-Z_Riskli = Z - Riskli_S?n?r
+Z_Riskli = Z - Riskli_Sınır
 
 ===============================================
 2. ETIKETLEME MANTIĞI
@@ -41,7 +41,7 @@ Z_Riskli = Z - Riskli_S?n?r
 ===============================================
 
 ------------------------------------------------
-SENARYO 1: Sınır = 0, Riskli S?n?r = 5000
+SENARYO 1: Sınır = 0, Riskli Sınır = 5000
 ------------------------------------------------
 Öğrenci: 100.000 sıralamalı SAY öğrencisi
 
@@ -65,7 +65,7 @@ SONUÇLAR:
 └─────────────────────────┴──────────┴──────────┘
 
 ------------------------------------------------
-SENARYO 2: Sınır = 25000, Riskli S?n?r = 5000
+SENARYO 2: Sınır = 25000, Riskli Sınır = 5000
 ------------------------------------------------
 Öğrenci: 100.000 sıralamalı SAY öğrencisi
 
@@ -122,7 +122,7 @@ aralığı listelenir. Ancak düşük sıralamalı bölümler
    - "Belki olur" dediğiniz bölümleri de incelemek
    - Tüm alternatifleri değerlendirmek
 
-3. RİSKLİ T kullanımı:
+3. RİSKLİ SINIR kullanımı:
    - 0: Risk kategorisi olmadan net liste
    - 5000-10000: Makul risk toleransı
    - 20000+: Agresif risk (dikkatli kullanın!)

@@ -24,7 +24,7 @@
         <div class="d-flex flex-column align-items-center mb-4">
             <img src="{{ url_for('static', filename='iu.logo.png') }}" alt="Işık Üniversitesi Logo" style="height:90px; max-width:400px; margin-bottom:10px;">
             <h1>TercihRobotu</h1>
-            <a href="{{ url_for('kullanim_klavuzu') }}" target="_blank" class="btn btn-outline-primary btn-sm">Kullanim Kilavuzu</a>
+            <a href="{{ url_for('kullanim_klavuzu') }}" target="_blank" class="btn btn-outline-primary btn-sm">Kullanım Kılavuzu</a>
         </div>
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
@@ -61,7 +61,7 @@
                     <input type="number" id="sinir" class="form-control" min="0">
                 </div>
                 <div class="col-md-2 col-12 mb-2">
-                    <label for="riskli_t" class="form-label">Riskli S?n?r</label>
+                    <label for="riskli_t" class="form-label">Riskli Sınır</label>
                     <input type="number" id="riskli_t" class="form-control" min="0">
                 </div>
                 <div class="col-md-3 col-12 d-flex align-items-end mb-2">
@@ -74,7 +74,7 @@
                         <th>Sıralama</th>
                         <th>Puan Türü</th>
                         <th>Sınır</th>
-                        <th>Riskli S?n?r</th>
+                        <th>Riskli Sınır</th>
                         <th>Sil</th>
                     </tr>
                 </thead>
@@ -84,7 +84,7 @@
             <div class="row mb-3">
                 <div class="col-12">
                     <div class="alert alert-secondary mb-0">
-                        Veri kaynagi: <strong>{{ veri_dosyasi_adi }}</strong>
+                        Veri kaynağı: <strong>{{ veri_dosyasi_adi }}</strong>
                     </div>
                 </div>
             </div>

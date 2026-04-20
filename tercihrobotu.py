@@ -20,7 +20,7 @@ TABLO_BASLIKLARI = [
     ("ucret", "Ücret"),
     ("dil", "Dil"),
     ("etiket", "Etiket"),
-    ("riskli_t", "Riskli S?n?r"),
+    ("riskli_t", "Riskli Sınır"),
     ("z_riskli", "Z Riskli"),
     ("parametre", "Parametre"),
 ]
@@ -48,7 +48,7 @@ def etiketle(ogr_siralama, taban, z_riskli):
 
 def veri_dosyasini_oku():
     if not os.path.exists(DATA_FILE_PATH):
-        raise FileNotFoundError("Veri dosyasi bulunamadi: {}".format(DATA_FILE_PATH))
+        raise FileNotFoundError("Veri dosyası bulunamadı: {}".format(DATA_FILE_PATH))
 
     df = pd.read_excel(DATA_FILE_PATH)
     df.columns = df.columns.str.strip()
@@ -191,14 +191,14 @@ def index():
 
         try:
             print("Gelen JSON Verisi:", request.form.get("eklenenler"))
-            print("Donusturulen Liste:", eklenenler)
+            print("Dönüştürülen Liste:", eklenenler)
             df = veri_dosyasini_oku()
             result = analiz_yap(df, eklenenler)
             session["analiz_df"] = result
             session["adsoyad"] = adsoyad
             session["talep_bolum"] = talep_bolum
         except Exception as e:
-            flash("Veri dosyasi okunamadi: {}".format(e), "danger")
+            flash("Veri dosyası okunamadı: {}".format(e), "danger")
 
         return render_template("index.html", adsoyad=adsoyad_ve_bolum, eklenenler=eklenenler, result=result, tablo_basliklari=tablo_basliklari, veri_dosyasi_adi=veri_dosyasi_adi)
 
