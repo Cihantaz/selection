@@ -648,6 +648,23 @@ def get_analysis(analysis_id):
     return row
 
 
+def get_recent_user_analyses(student_email, limit=8):
+    if not student_email:
+        return []
+    with get_db_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT id, created_at, student_name, student_input, ranking_summary, result_count, download_count, status
+            FROM analysis_runs
+            WHERE student_email = ?
+            ORDER BY created_at DESC
+            LIMIT ?
+            """,
+            (student_email, limit),
+        ).fetchall()
+    return rows
+
+
 def record_download(analysis_id, filename, row_count):
     timestamp = utcnow_iso()
     with get_db_connection() as connection:
@@ -664,15 +681,17 @@ def record_download(analysis_id, filename, row_count):
 def build_report_context(row):
     results = decompress_results(row["result_blob"])
     params = json.loads(row["params_json"])
+    current_email = get_student_email()
     return {
         "analysis_id": row["id"],
         "adsoyad": row["student_input"],
-        "current_email": get_student_email(),
+        "current_email": current_email,
         "eklenenler": params,
         "result": results,
         "tablo_basliklari": TABLO_BASLIKLARI,
         "veri_dosyasi_adi": row["source_file"],
         "download_url": url_for("indir", analysis_id=row["id"]),
+        "recent_records": get_recent_user_analyses(current_email),
         "result_meta": {
             "analysis_id": row["id"],
             "created_at": row["created_at"],
@@ -791,6 +810,7 @@ def index():
         "tablo_basliklari": TABLO_BASLIKLARI,
         "veri_dosyasi_adi": active_data_path,
         "download_url": None,
+        "recent_records": get_recent_user_analyses(get_student_email()),
         "result_meta": None,
     }
 
@@ -898,6 +918,9 @@ def rapor(analysis_id):
     row = get_analysis(analysis_id)
     if row is None:
         abort(404)
+    if row["student_email"] != get_student_email():
+        flash("Bu rapor baska bir mail adresine ait.", "warning")
+        return redirect(url_for("index"))
     if row["status"] != "success":
         flash("Bu rapor olusturulamadi.", "danger")
         return redirect(url_for("index"))
@@ -910,6 +933,9 @@ def indir(analysis_id):
     row = get_analysis(analysis_id)
     if row is None or row["status"] != "success":
         abort(404)
+    if row["student_email"] != get_student_email():
+        flash("Bu dosya baska bir mail adresine ait.", "warning")
+        return redirect(url_for("index"))
 
     results = decompress_results(row["result_blob"])
     output = generate_excel(row, results)
