@@ -69,30 +69,24 @@
         .scenario-table td {
             vertical-align: middle;
         }
-        .meta-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-            gap: 14px;
-            margin-bottom: 18px;
+        .top-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 22px;
         }
-        .meta-card {
-            border: 1px solid var(--line);
-            border-radius: 18px;
-            padding: 16px;
-            background: linear-gradient(180deg, #ffffff 0%, #f8fbfe 100%);
-        }
-        .meta-label {
-            display: block;
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--muted);
-            margin-bottom: 6px;
-        }
-        .meta-value {
-            font-size: 1.15rem;
-            font-weight: 700;
-            word-break: break-word;
+        .email-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: var(--brand-soft);
+            color: var(--brand);
+            font-weight: 600;
+            font-size: 0.95rem;
         }
         .section-head {
             display: flex;
@@ -159,12 +153,16 @@
             <img src="{{ url_for('static', filename='iu.logo.png') }}" alt="I&#351;&#305;k &Uuml;niversitesi Logo" class="hero-logo">
         </div>
 
-        <div class="d-flex flex-wrap gap-2 mb-4">
-            <a href="{{ url_for('kullanim_klavuzu') }}" target="_blank" class="btn btn-outline-primary btn-sm">Kullan&#305;m K&#305;lavuzu</a>
-            <a href="{{ url_for('admin_login') }}" class="btn btn-outline-dark btn-sm">Admin</a>
-            {% if download_url %}
-            <a href="{{ download_url }}" class="btn btn-success btn-sm" target="_blank">Excel Olarak &#304;ndir</a>
-            {% endif %}
+        <div class="top-actions">
+            <div class="email-pill">
+                <span>Mail:</span>
+                <span>{{ current_email }}</span>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('kullanim_klavuzu') }}" target="_blank" class="btn btn-outline-primary btn-sm">Kullan&#305;m K&#305;lavuzu</a>
+                <a href="{{ url_for('student_logout') }}" class="btn btn-outline-secondary btn-sm">Mail De&#287;i&#351;tir</a>
+                <a href="{{ url_for('admin_login') }}" class="btn btn-outline-dark btn-sm">Admin</a>
+            </div>
         </div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -176,31 +174,6 @@
                 </div>
             {% endif %}
         {% endwith %}
-
-        {% if result_meta %}
-        <div class="meta-grid">
-            <div class="meta-card">
-                <span class="meta-label">Rapor No</span>
-                <span class="meta-value">{{ result_meta.analysis_id[:8] }}</span>
-            </div>
-            <div class="meta-card">
-                <span class="meta-label">Sonu&ccedil; Say&#305;s&#305;</span>
-                <span class="meta-value">{{ result_meta.row_count }}</span>
-            </div>
-            <div class="meta-card">
-                <span class="meta-label">S&uuml;re</span>
-                <span class="meta-value">{{ result_meta.duration_ms }} ms</span>
-            </div>
-            <div class="meta-card">
-                <span class="meta-label">Veri Kayna&#287;&#305;</span>
-                <span class="meta-value">{{ result_meta.source_file }}</span>
-            </div>
-            <div class="meta-card">
-                <span class="meta-label">&#304;ndirme</span>
-                <span class="meta-value">{{ result_meta.download_count }}</span>
-            </div>
-        </div>
-        {% endif %}
 
         <div class="panel">
             <div class="panel-title">Analiz Girdileri</div>
@@ -276,8 +249,8 @@
         {% if result is not none %}
         <div class="section-head">
             <h2 class="section-title">Analiz Sonu&ccedil;lar&#305;</h2>
-            {% if result_meta %}
-            <span class="text-secondary small">{{ result_meta.created_at }}</span>
+            {% if download_url %}
+            <a href="{{ download_url }}" class="btn btn-success btn-sm" target="_blank">Excel Olarak &#304;ndir</a>
             {% endif %}
         </div>
         {% if result %}

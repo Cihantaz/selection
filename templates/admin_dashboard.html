@@ -167,8 +167,10 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Zaman</th>
+                                    <th>Mail</th>
+                                    <th>Ad Soyad</th>
+                                    <th>Siralama</th>
                                     <th>Rapor</th>
-                                    <th>&Ouml;&#287;renci</th>
                                     <th>Sonu&ccedil;</th>
                                     <th>S&uuml;re</th>
                                     <th>Kaynak</th>
@@ -180,8 +182,10 @@
                                 {% for row in metrics.recent_analyses %}
                                 <tr>
                                     <td>{{ row.created_at }}</td>
+                                    <td>{{ row.student_email }}</td>
+                                    <td>{{ row.student_name or row.student_input }}</td>
+                                    <td>{{ row.ranking_summary }}</td>
                                     <td><a href="{{ url_for('rapor', analysis_id=row.id) }}" target="_blank">{{ row.id[:8] }}</a></td>
-                                    <td>{{ row.student_input }}</td>
                                     <td>{{ row.result_count }}</td>
                                     <td>{{ row.duration_ms }} ms</td>
                                     <td>{{ row.source_file }}</td>
@@ -189,7 +193,7 @@
                                     <td>{{ row.download_count }}</td>
                                 </tr>
                                 {% else %}
-                                <tr><td colspan="8" class="text-secondary">Hen&uuml;z analiz yok.</td></tr>
+                                <tr><td colspan="10" class="text-secondary">Hen&uuml;z analiz yok.</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -205,6 +209,9 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Zaman</th>
+                                    <th>Mail</th>
+                                    <th>Ad Soyad</th>
+                                    <th>Siralama</th>
                                     <th>Rapor</th>
                                     <th>Dosya</th>
                                     <th>Sat&#305;r</th>
@@ -214,12 +221,15 @@
                                 {% for row in metrics.recent_downloads %}
                                 <tr>
                                     <td>{{ row.created_at }}</td>
+                                    <td>{{ row.student_email }}</td>
+                                    <td>{{ row.student_name }}</td>
+                                    <td>{{ row.ranking_summary }}</td>
                                     <td><a href="{{ url_for('rapor', analysis_id=row.analysis_id) }}" target="_blank">{{ row.analysis_id[:8] }}</a></td>
                                     <td>{{ row.filename }}</td>
                                     <td>{{ row.row_count }}</td>
                                 </tr>
                                 {% else %}
-                                <tr><td colspan="4" class="text-secondary">Hen&uuml;z indirme yok.</td></tr>
+                                <tr><td colspan="7" class="text-secondary">Hen&uuml;z indirme yok.</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>

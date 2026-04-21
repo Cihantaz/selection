@@ -40,8 +40,8 @@ if not DATABASE_PATH.is_absolute():
 REPORT_RETENTION_DAYS = int(os.environ.get("REPORT_RETENTION_DAYS", "30"))
 LOG_RETENTION_DAYS = int(os.environ.get("LOG_RETENTION_DAYS", "60"))
 MAX_PARAMETER_COUNT = int(os.environ.get("MAX_PARAMETER_COUNT", "12"))
-ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "")
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "cihan.tazeoz@isikun.edu.tr")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "11235813")
 ADMIN_PASSWORD_HASH = os.environ.get("ADMIN_PASSWORD_HASH", "")
 
 TABLO_BASLIKLARI = [
@@ -143,9 +143,11 @@ def init_db():
                 id TEXT PRIMARY KEY,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL,
+                student_email TEXT NOT NULL DEFAULT '',
                 student_input TEXT NOT NULL DEFAULT '',
                 student_name TEXT NOT NULL DEFAULT '',
                 requested_department TEXT NOT NULL DEFAULT '',
+                ranking_summary TEXT NOT NULL DEFAULT '',
                 params_json TEXT NOT NULL,
                 result_blob BLOB,
                 result_count INTEGER NOT NULL DEFAULT 0,
@@ -189,6 +191,23 @@ def init_db():
             CREATE INDEX IF NOT EXISTS idx_logs_created_at
             ON app_logs(created_at DESC);
             """
+        )
+        ensure_analysis_run_columns(connection)
+
+
+def ensure_analysis_run_columns(connection):
+    columns = {
+        row["name"]
+        for row in connection.execute("PRAGMA table_info(analysis_runs)").fetchall()
+    }
+
+    if "student_email" not in columns:
+        connection.execute(
+            "ALTER TABLE analysis_runs ADD COLUMN student_email TEXT NOT NULL DEFAULT ''"
+        )
+    if "ranking_summary" not in columns:
+        connection.execute(
+            "ALTER TABLE analysis_runs ADD COLUMN ranking_summary TEXT NOT NULL DEFAULT ''"
         )
 
 
@@ -274,6 +293,20 @@ def admin_required(view_func):
     def wrapped_view(*args, **kwargs):
         if not is_admin_authenticated():
             return redirect(url_for("admin_login", next=request.path))
+        return view_func(*args, **kwargs)
+
+    return wrapped_view
+
+
+def get_student_email():
+    return session.get("student_email", "").strip()
+
+
+def student_email_required(view_func):
+    @wraps(view_func)
+    def wrapped_view(*args, **kwargs):
+        if not get_student_email():
+            return redirect(url_for("student_login", next=request.full_path if request.query_string else request.path))
         return view_func(*args, **kwargs)
 
     return wrapped_view
@@ -484,6 +517,15 @@ def sanitize_eklenenler(raw_items):
     return cleaned_items
 
 
+def build_ranking_summary(items):
+    rankings = []
+    for item in items:
+        ranking = str(item.get("puan", "")).strip()
+        if ranking and ranking not in rankings:
+            rankings.append(ranking)
+    return ", ".join(rankings)
+
+
 def build_result_row(row, parameter, ogr_siralama_int, riskli_t_int, z_riskli):
     taban_siralama_numeric = row.get("__taban_siralama_numeric")
     return {
@@ -552,9 +594,11 @@ def decompress_results(blob):
 
 
 def save_analysis(
+    student_email,
     student_input,
     student_name,
     requested_department,
+    ranking_summary,
     params,
     results,
     source_file,
@@ -568,18 +612,21 @@ def save_analysis(
         connection.execute(
             """
             INSERT INTO analysis_runs(
-                id, created_at, updated_at, student_input, student_name, requested_department,
-                params_json, result_blob, result_count, source_file, duration_ms, status,
+                id, created_at, updated_at, student_email, student_input, student_name,
+                requested_department, ranking_summary, params_json, result_blob, result_count,
+                source_file, duration_ms, status,
                 error_message, client_ip, user_agent
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 analysis_id,
                 timestamp,
                 timestamp,
+                student_email,
                 student_input,
                 student_name,
                 requested_department,
+                ranking_summary,
                 json.dumps(params, ensure_ascii=False),
                 compress_results(results) if status == "success" else None,
                 len(results),
@@ -620,6 +667,7 @@ def build_report_context(row):
     return {
         "analysis_id": row["id"],
         "adsoyad": row["student_input"],
+        "current_email": get_student_email(),
         "eklenenler": params,
         "result": results,
         "tablo_basliklari": TABLO_BASLIKLARI,
@@ -676,10 +724,10 @@ def get_admin_metrics():
                 "SELECT COALESCE(AVG(duration_ms), 0) FROM analysis_runs WHERE status = 'success'"
             ).fetchone()[0],
             "recent_analyses": connection.execute(
-                "SELECT id, created_at, student_input, result_count, duration_ms, source_file, status, download_count FROM analysis_runs ORDER BY created_at DESC LIMIT 25"
+                "SELECT id, created_at, student_email, student_name, student_input, ranking_summary, result_count, duration_ms, source_file, status, download_count FROM analysis_runs ORDER BY created_at DESC LIMIT 25"
             ).fetchall(),
             "recent_downloads": connection.execute(
-                "SELECT analysis_id, created_at, filename, row_count FROM download_events ORDER BY created_at DESC LIMIT 25"
+                "SELECT download_events.analysis_id, download_events.created_at, download_events.filename, download_events.row_count, analysis_runs.student_email, analysis_runs.student_name, analysis_runs.ranking_summary FROM download_events LEFT JOIN analysis_runs ON analysis_runs.id = download_events.analysis_id ORDER BY download_events.created_at DESC LIMIT 25"
             ).fetchall(),
             "recent_logs": connection.execute(
                 "SELECT created_at, level, event_type, message FROM app_logs ORDER BY created_at DESC LIMIT 50"
@@ -704,7 +752,30 @@ def before_request():
     maybe_cleanup()
 
 
+@app.route("/giris", methods=["GET", "POST"])
+def student_login():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        if not email or "@" not in email:
+            flash("Gecerli bir ogrenci mail adresi girin.", "danger")
+            return render_template("student_login.html", email=email)
+        session["student_email"] = email
+        log_event("INFO", "student_login", "Ogrenci mail girisi alindi.", {"student_email": email})
+        target = request.args.get("next") or url_for("index")
+        return redirect(target)
+
+    return render_template("student_login.html", email=get_student_email())
+
+
+@app.get("/cikis")
+def student_logout():
+    session.pop("student_email", None)
+    flash("Mail oturumu kapatildi.", "info")
+    return redirect(url_for("student_login"))
+
+
 @app.route("/", methods=["GET", "POST"])
+@student_email_required
 def index():
     active_data_path = get_active_data_file_setting()
     try:
@@ -714,6 +785,7 @@ def index():
 
     template_context = {
         "adsoyad": "",
+        "current_email": get_student_email(),
         "eklenenler": [],
         "result": None,
         "tablo_basliklari": TABLO_BASLIKLARI,
@@ -754,6 +826,8 @@ def index():
     else:
         student_name = adsoyad_ve_bolum
         requested_department = ""
+    student_email = get_student_email()
+    ranking_summary = build_ranking_summary(eklenenler)
 
     started_at = time.perf_counter()
     try:
@@ -761,9 +835,11 @@ def index():
         results = analiz_yap(dataframe, eklenenler)
         duration_ms = int((time.perf_counter() - started_at) * 1000)
         analysis_id = save_analysis(
+            student_email=student_email,
             student_input=adsoyad_ve_bolum,
             student_name=student_name,
             requested_department=requested_department,
+            ranking_summary=ranking_summary,
             params=eklenenler,
             results=results,
             source_file=source_file,
@@ -776,6 +852,9 @@ def index():
             "Analiz tamamlandi.",
             {
                 "analysis_id": analysis_id,
+                "student_email": student_email,
+                "student_name": student_name,
+                "ranking_summary": ranking_summary,
                 "result_count": len(results),
                 "duration_ms": duration_ms,
                 "source_file": source_file,
@@ -791,9 +870,11 @@ def index():
         except FileNotFoundError:
             source_file = active_data_path
         analysis_id = save_analysis(
+            student_email=student_email,
             student_input=adsoyad_ve_bolum,
             student_name=student_name,
             requested_department=requested_department,
+            ranking_summary=ranking_summary,
             params=eklenenler,
             results=[],
             source_file=source_file,
@@ -805,13 +886,14 @@ def index():
             "ERROR",
             "analysis_error",
             "Analiz hata ile sonlandi.",
-            {"analysis_id": analysis_id, "error": str(exc)},
+            {"analysis_id": analysis_id, "student_email": student_email, "error": str(exc)},
         )
         flash("Veri dosyasi okunamadi: {}".format(exc), "danger")
         return render_template("index.html", **template_context)
 
 
 @app.get("/rapor/<analysis_id>")
+@student_email_required
 def rapor(analysis_id):
     row = get_analysis(analysis_id)
     if row is None:
@@ -823,6 +905,7 @@ def rapor(analysis_id):
 
 
 @app.get("/indir/<analysis_id>")
+@student_email_required
 def indir(analysis_id):
     row = get_analysis(analysis_id)
     if row is None or row["status"] != "success":
@@ -837,7 +920,12 @@ def indir(analysis_id):
         "INFO",
         "download_success",
         "Excel indirildi.",
-        {"analysis_id": analysis_id, "filename": filename, "row_count": len(results)},
+        {
+            "analysis_id": analysis_id,
+            "student_email": row["student_email"],
+            "filename": filename,
+            "row_count": len(results),
+        },
     )
     return send_file(
         output,
