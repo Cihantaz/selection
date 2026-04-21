@@ -1,133 +1,77 @@
 ===============================================
-         TERCİH ROBOTU - KULLANIM KILAVUZU
+         TERCIH ROBOTU - KULLANIM KILAVUZU
 ===============================================
 
-Bu doküman, Tercih Robotu'nun hesaplama mantığını ve 
-örnek senaryoları açıklar.
+Bu dokuman, Tercih Robotu'nun temel hesaplama mantigini
+ve kullanim seklini aciklar.
 
 ===============================================
 1. TEMEL KAVRAMLAR
 ===============================================
 
-- Ogr_Siralama : Öğrencinin YKS sıralaması
-- Sınır        : Öğrencinin kaç sıra geriye gidebileceği
-- Riskli Sınır     : Ekstra risk toleransı (opsiyonel)
-- Z            : Hesaplanan temel sınır değeri
-- Z_Riskli     : Risk toleransı eklenmiş sınır değeri
+- Ogr_Siralama : Ogrencinin YKS siralamasi
+- Sinir        : Ogrencinin kac sira geriye gidebilecegi
+- Z            : Hesaplanan alt sinir degeri
 
-FORMÜLLER:
------------
-Z = Ogr_Siralama - Sınır
-Z_Riskli = Z - Riskli_Sınır
+FORMUL:
+--------
+Z = Ogr_Siralama - Sinir
 
 ===============================================
-2. ETIKETLEME MANTIĞI
+2. ETIKETLEME MANTIGI
 ===============================================
 
-🟢 UYGUN   : Bölüm Taban Sıralaması ≥ Ogr_Siralama
-              (Öğrenci kesin girer)
+🟢 UYGUN   : Bolum Taban Siralamasi >= Ogr_Siralama
+              (Ogrencinin dogrudan uygun oldugu alan)
 
-🟡 RİSKLİ  : Z_Riskli ≤ Bölüm Taban Sıralaması < Ogr_Siralama
-              (Risk alınabilir, denenebilir)
+🟡 RISKLI  : Z <= Bolum Taban Siralamasi < Ogr_Siralama
+              (Sinir dahilinde kalan alan)
 
-🔴 UYGUNSUZ: Z < Bölüm Taban Sıralaması < Z_Riskli
-              (Çok riskli ama listelenir)
-
-❌ LİSTELENMEZ: Bölüm Taban Sıralaması ≤ Z_Riskli
-              (Filtrelenir, görünmez)
+❌ LISTELENMEZ: Bolum Taban Siralamasi < Z
+              (Sinirin altinda kaldigi icin listede yer almaz)
 
 ===============================================
-3. ÖRNEK SENARYOLAR
+3. ORNEK SENARYOLAR
 ===============================================
 
 ------------------------------------------------
-SENARYO 1: Sınır = 0, Riskli Sınır = 5000
+SENARYO 1: Sinir = 0
 ------------------------------------------------
-Öğrenci: 100.000 sıralamalı SAY öğrencisi
+Ogrenci: 100.000 siralamali SAY ogrencisi
 
 HESAPLAMA:
 Z = 100.000 - 0 = 100.000
-Z_Riskli = 100.000 - 5.000 = 95.000
 
-SONUÇLAR:
-- Bölüm Sıralaması 100.000+  → 🟢 Uygun
-- Bölüm Sıralaması 95.000-99.999 → 🟡 Riskli
-- Bölüm Sıralaması 95.000 altı → ❌ Listelenmez
-
-ÖRNEK ÇIKTI:
-┌─────────────────────────┬──────────┬──────────┐
-│ Bölüm                   │ Sıralama │ Etiket   │
-├─────────────────────────┼──────────┼──────────┤
-│ Bilgisayar Müh.         │ 105.000  │ 🟢 Uygun │
-│ Elektrik-Elektronik     │ 98.000   │ 🟡 Riskli│
-│ Makine Müh.             │ 96.500   │ 🟡 Riskli│
-│ İnşaat Müh.             │ 94.000   │ ❌ Yok   │
-└─────────────────────────┴──────────┴──────────┘
+SONUCLAR:
+- Bolum Siralamasi 100.000+  -> Uygun
+- Bolum Siralamasi 100.000 alti -> Listelenmez
 
 ------------------------------------------------
-SENARYO 2: Sınır = 25000, Riskli Sınır = 5000
+SENARYO 2: Sinir = 25.000
 ------------------------------------------------
-Öğrenci: 100.000 sıralamalı SAY öğrencisi
+Ogrenci: 100.000 siralamali SAY ogrencisi
 
 HESAPLAMA:
 Z = 100.000 - 25.000 = 75.000
-Z_Riskli = 75.000 - 5.000 = 70.000
 
-SONUÇLAR:
-- Bölüm Sıralaması 100.000+  → 🟢 Uygun
-- Bölüm Sıralaması 75.000-99.999 → 🟡 Riskli
-- Bölüm Sıralaması 70.001-74.999 → 🔴 Uygunsuz
-- Bölüm Sıralaması 70.000 altı → ❌ Listelenmez
-
-ÖRNEK ÇIKTI:
-┌─────────────────────────┬──────────┬────────────┐
-│ Bölüm                   │ Sıralama │ Etiket     │
-├─────────────────────────┼──────────┼────────────┤
-│ Yazılım Müh.            │ 110.000  │ 🟢 Uygun   │
-│ Endüstri Müh.           │ 85.000   │ 🟡 Riskli  │
-│ Elektrik-Elektronik     │ 78.000   │ 🟡 Riskli  │
-│ Makine Müh.             │ 72.000   │ 🔴 Uygunsuz│
-│ İnşaat Müh.             │ 68.000   │ ❌ Yok     │
-└─────────────────────────┴──────────┴────────────┘
+SONUCLAR:
+- Bolum Siralamasi 100.000+ -> Uygun
+- Bolum Siralamasi 75.000-99.999 -> Riskli
+- Bolum Siralamasi 75.000 alti -> Listelenmez
 
 ===============================================
-4. İKİ SENARYONUN KARŞILAŞTIRMASI
+4. KULLANIM TAVSIYELERI
 ===============================================
 
-                    │ Senaryo 1 │ Senaryo 2
-────────────────────┼───────────┼───────────
-Sınır               │     0     │   25.000
-Z Değeri            │  100.000  │   75.000
-Z_Riskli Değeri     │   95.000  │   70.000
-Görünür Aralık      │   95.000+ │   70.000+
-Uygun Aralık        │  100.000+ │  100.000+
-Riskli Aralık       │95K-99.999 │75K-99.999
-Uygunsuz (görünür)  │    Yok    │70K-74.999
+1. SINIR = 0 kullanin:
+   - Daha dar ve daha net bir liste icin
+   - Sadece dogrudan uygun alanlari gormek icin
 
-NOT: Sınır değeri arttıkça daha geniş bir sıralama
-aralığı listelenir. Ancak düşük sıralamalı bölümler
-"Uygunsuz" olarak işaretlenir.
+2. SINIR > 0 kullanin:
+   - Daha genis bir alternatif havuzu icin
+   - Risk alinabilecek alanlari da gormek icin
 
 ===============================================
-5. KULLANIM TAVSİYELERİ
-===============================================
-
-1. SINIR = 0 kullanın:
-   - Sadece gerçekten şanslı olabileceğiniz bölümleri görmek
-   - Konservatif bir liste istiyorsanız
-   - Risk almak istemiyorsanız
-
-2. SINIR > 0 kullanın:
-   - Daha geniş bir perspektif görmek
-   - "Belki olur" dediğiniz bölümleri de incelemek
-   - Tüm alternatifleri değerlendirmek
-
-3. RİSKLİ SINIR kullanımı:
-   - 0: Risk kategorisi olmadan net liste
-   - 5000-10000: Makul risk toleransı
-   - 20000+: Agresif risk (dikkatli kullanın!)
-
-===============================================
-Hazırlayan: Tercih Robotu
+Hazirlayan: Tercih Robotu
 Tarih: 2026
 ===============================================

@@ -54,8 +54,6 @@ TABLO_BASLIKLARI = [
     ("ucret", "\u00dccret"),
     ("dil", "Dil"),
     ("etiket", "Etiket"),
-    ("riskli_t", "Riskli S\u0131n\u0131r"),
-    ("z_riskli", "Z Riskli"),
     ("parametre", "Parametre"),
 ]
 
@@ -418,7 +416,7 @@ def infer_burs_orani(raw_burs, program_adi):
     return ""
 
 
-def etiketle(ogr_siralama, taban, z_riskli):
+def etiketle(ogr_siralama, taban, alt_limit):
     try:
         ogr_siralama = int(ogr_siralama)
         taban = int(taban)
@@ -427,7 +425,7 @@ def etiketle(ogr_siralama, taban, z_riskli):
 
     if taban >= ogr_siralama:
         return "Uygun"
-    if z_riskli is not None and taban >= z_riskli:
+    if taban >= alt_limit:
         return "Riskli"
     return "Uygunsuz"
 
@@ -512,7 +510,7 @@ def build_ranking_summary(items):
     return ", ".join(rankings)
 
 
-def build_result_row(row, parameter, ogr_siralama_int, riskli_t_int, z_riskli):
+def build_result_row(row, parameter, ogr_siralama_int, alt_limit):
     taban_siralama_numeric = row.get("__taban_siralama_numeric")
     return {
         "bolum_adi": row.get("__program_adi", ""),
@@ -523,9 +521,7 @@ def build_result_row(row, parameter, ogr_siralama_int, riskli_t_int, z_riskli):
         "tavan_puan": row.get("Tavan Puan", ""),
         "ucret": row.get("__ucret_formatted", ""),
         "dil": row.get("__dil", "TR"),
-        "etiket": etiketle(ogr_siralama_int, taban_siralama_numeric, z_riskli),
-        "riskli_t": riskli_t_int,
-        "z_riskli": z_riskli if z_riskli is not None else "",
+        "etiket": etiketle(ogr_siralama_int, taban_siralama_numeric, alt_limit),
         "parametre": "{}/ {}/ {}".format(parameter["tur"], parameter["puan"], parameter["sinir"]),
     }
 
@@ -537,10 +533,8 @@ def analiz_yap(df, eklenenler):
     for parameter in eklenenler:
         ogr_siralama_int = temizle_sayi(parameter["puan"])
         sinir_int = temizle_sayi(parameter["sinir"])
-        riskli_t_int = temizle_sayi(parameter.get("riskli_t", 0))
         z_degeri = ogr_siralama_int - sinir_int
-        z_riskli = z_degeri - riskli_t_int if riskli_t_int else None
-        alt_limit = z_riskli if z_riskli is not None else z_degeri
+        alt_limit = z_degeri
 
         filtered = df
         if parameter["tur"]:
@@ -556,14 +550,13 @@ def analiz_yap(df, eklenenler):
                     parameter["tur"],
                     parameter["puan"],
                     parameter["sinir"],
-                    parameter.get("riskli_t", "0"),
                     row.get("__program_adi", ""),
                     row.get("En D\u00fc\u015f\u00fck S\u0131ralama", ""),
                 )
                 if unique_key in seen:
                     continue
                 seen.add(unique_key)
-                results.append(build_result_row(row, parameter, ogr_siralama_int, riskli_t_int, z_riskli))
+                results.append(build_result_row(row, parameter, ogr_siralama_int, alt_limit))
 
     return results
 

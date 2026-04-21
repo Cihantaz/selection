@@ -33,21 +33,39 @@
         }
         .hero {
             display: flex;
-            gap: 18px;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 28px;
+            justify-content: center;
+            margin-bottom: 12px;
         }
         .hero-title {
             font-size: clamp(1.9rem, 2.8vw, 2.7rem);
             font-weight: 800;
             letter-spacing: -0.03em;
             margin: 0;
+            text-align: center;
         }
         .hero-logo {
             height: 86px;
             max-width: 100%;
             object-fit: contain;
+        }
+        .hero-nav {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+        .hero-nav-left {
+            display: flex;
+            justify-content: flex-start;
+        }
+        .hero-nav-center {
+            display: flex;
+            justify-content: center;
+        }
+        .hero-nav-right {
+            display: flex;
+            justify-content: flex-end;
         }
         .panel {
             border: 1px solid var(--line);
@@ -63,14 +81,6 @@
         .scenario-table th,
         .scenario-table td {
             vertical-align: middle;
-        }
-        .top-actions {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 22px;
         }
         .section-head {
             display: flex;
@@ -110,15 +120,24 @@
         .footer-brand img {
             height: 34px;
         }
+        .bottom-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
         @media (max-width: 900px) {
             .page-shell {
                 margin: 14px;
                 padding: 18px;
                 border-radius: 18px;
             }
-            .hero {
-                flex-direction: column;
-                align-items: flex-start;
+            .hero-nav {
+                grid-template-columns: 1fr;
+            }
+            .hero-nav-left,
+            .hero-nav-center,
+            .hero-nav-right {
+                justify-content: center;
             }
         }
     </style>
@@ -128,16 +147,19 @@
 <body>
     <div class="page-shell">
         <div class="hero">
-            <div>
-                <h1 class="hero-title">Tercih Robotu</h1>
-            </div>
             <img src="{{ url_for('static', filename='iu.logo.png') }}" alt="I&#351;&#305;k &Uuml;niversitesi Logo" class="hero-logo">
         </div>
 
-        <div class="top-actions">
-            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">Ana Sayfa</a>
-            <a href="{{ url_for('kullanim_klavuzu') }}" target="_blank" class="btn btn-outline-primary btn-sm">Kullan&#305;m K&#305;lavuzu</a>
-            <a href="{{ url_for('admin_login') }}" class="btn btn-outline-dark btn-sm">Admin</a>
+        <div class="hero-nav">
+            <div class="hero-nav-left">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">Ana Sayfa</a>
+            </div>
+            <div class="hero-nav-center">
+                <h1 class="hero-title">Tercih Robotu</h1>
+            </div>
+            <div class="hero-nav-right">
+                <a href="{{ url_for('kullanim_klavuzu') }}" target="_blank" class="btn btn-outline-primary btn-sm">Kullan&#305;m K&#305;lavuzu</a>
+            </div>
         </div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -151,7 +173,7 @@
         {% endwith %}
 
         <div class="panel">
-            <div class="panel-title">Analiz Girdileri</div>
+            <div class="panel-title">L&uuml;tfen a&#351;a&#287;&#305;daki bilgileri doldurunuz.</div>
             <form method="post" action="{{ url_for('analyze') }}" autocomplete="off">
                 <input type="hidden" name="student_email" value="{{ student_email }}">
                 <div class="row g-3">
@@ -259,6 +281,9 @@
                 <img src="{{ url_for('static', filename='mesale.png') }}" alt="Mesale Logo">
                 <span>I&#351;&#305;k &Uuml;niversitesi &Ouml;&#287;renci &#304;&#351;leri Daire Ba&#351;kanl&#305;&#287;&#305;</span>
             </div>
+        </div>
+        <div class="bottom-actions">
+            <a href="{{ url_for('admin_login') }}" class="btn btn-outline-dark btn-sm">Admin</a>
         </div>
     </div>
 
