@@ -298,20 +298,6 @@ def admin_required(view_func):
     return wrapped_view
 
 
-def get_student_email():
-    return session.get("student_email", "").strip()
-
-
-def student_email_required(view_func):
-    @wraps(view_func)
-    def wrapped_view(*args, **kwargs):
-        if not get_student_email():
-            return redirect(url_for("student_login", next=request.full_path if request.query_string else request.path))
-        return view_func(*args, **kwargs)
-
-    return wrapped_view
-
-
 def resolve_repo_path(relative_path):
     candidate = (APP_ROOT / relative_path).resolve()
     candidate.relative_to(APP_ROOT.resolve())
@@ -648,23 +634,6 @@ def get_analysis(analysis_id):
     return row
 
 
-def get_recent_user_analyses(student_email, limit=8):
-    if not student_email:
-        return []
-    with get_db_connection() as connection:
-        rows = connection.execute(
-            """
-            SELECT id, created_at, student_name, student_input, ranking_summary, result_count, download_count, status
-            FROM analysis_runs
-            WHERE student_email = ?
-            ORDER BY created_at DESC
-            LIMIT ?
-            """,
-            (student_email, limit),
-        ).fetchall()
-    return rows
-
-
 def record_download(analysis_id, filename, row_count):
     timestamp = utcnow_iso()
     with get_db_connection() as connection:
@@ -681,17 +650,16 @@ def record_download(analysis_id, filename, row_count):
 def build_report_context(row):
     results = decompress_results(row["result_blob"])
     params = json.loads(row["params_json"])
-    current_email = get_student_email()
     return {
         "analysis_id": row["id"],
         "adsoyad": row["student_input"],
-        "current_email": current_email,
+        "student_email": row["student_email"],
         "eklenenler": params,
         "result": results,
         "tablo_basliklari": TABLO_BASLIKLARI,
         "veri_dosyasi_adi": row["source_file"],
         "download_url": url_for("indir", analysis_id=row["id"]),
-        "recent_records": get_recent_user_analyses(current_email),
+        "ephemeral_path": None,
         "result_meta": {
             "analysis_id": row["id"],
             "created_at": row["created_at"],
@@ -701,6 +669,21 @@ def build_report_context(row):
             "source_file": row["source_file"],
         },
     }
+
+
+def render_analysis_template(student_email, adsoyad="", eklenenler=None, result=None, download_url=None, result_meta=None):
+    return render_template(
+        "index.html",
+        adsoyad=adsoyad,
+        student_email=student_email,
+        eklenenler=eklenenler or [],
+        result=result,
+        tablo_basliklari=TABLO_BASLIKLARI,
+        veri_dosyasi_adi="",
+        download_url=download_url,
+        result_meta=result_meta,
+        ephemeral_path=url_for("ephemeral_entry"),
+    )
 
 
 def generate_excel(row, results):
@@ -771,67 +754,39 @@ def before_request():
     maybe_cleanup()
 
 
-@app.route("/giris", methods=["GET", "POST"])
-def student_login():
-    if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
-        if not email or "@" not in email:
-            flash("Gecerli bir ogrenci mail adresi girin.", "danger")
-            return render_template("student_login.html", email=email)
-        session["student_email"] = email
-        log_event("INFO", "student_login", "Ogrenci mail girisi alindi.", {"student_email": email})
-        target = request.args.get("next") or url_for("index")
-        return redirect(target)
-
-    return render_template("student_login.html", email=get_student_email())
-
-
-@app.get("/cikis")
-def student_logout():
-    session.pop("student_email", None)
-    flash("Mail oturumu kapatildi.", "info")
-    return redirect(url_for("student_login"))
-
-
 @app.route("/", methods=["GET", "POST"])
-@student_email_required
 def index():
-    active_data_path = get_active_data_file_setting()
-    try:
-        _, active_data_path = resolve_active_data_file()
-    except FileNotFoundError:
-        pass
-
-    template_context = {
-        "adsoyad": "",
-        "current_email": get_student_email(),
-        "eklenenler": [],
-        "result": None,
-        "tablo_basliklari": TABLO_BASLIKLARI,
-        "veri_dosyasi_adi": active_data_path,
-        "download_url": None,
-        "recent_records": get_recent_user_analyses(get_student_email()),
-        "result_meta": None,
-    }
-
     if request.method == "GET":
-        return render_template("index.html", **template_context)
+        return render_template("student_login.html", email="")
 
+    student_email = request.form.get("email", "").strip().lower()
+    if not student_email or "@" not in student_email:
+        flash("Gecerli bir mail adresi girin.", "danger")
+        return render_template("student_login.html", email=student_email)
+
+    log_event("INFO", "student_login", "Mail girisi alindi.", {"student_email": student_email})
+    return render_analysis_template(student_email=student_email)
+
+
+@app.post("/analiz")
+def analyze():
+    student_email = request.form.get("student_email", "").strip().lower()
     adsoyad_ve_bolum = request.form.get("adsoyad", "").strip()
-    template_context["adsoyad"] = adsoyad_ve_bolum
+
+    if not student_email or "@" not in student_email:
+        flash("Mail oturumu gecerli degil, tekrar girin.", "warning")
+        return redirect(url_for("index"))
 
     try:
         raw_eklenenler = json.loads(request.form.get("eklenenler", "[]"))
     except json.JSONDecodeError:
         flash("Senaryo listesi okunamadi.", "danger")
-        return render_template("index.html", **template_context)
+        return render_analysis_template(student_email=student_email, adsoyad=adsoyad_ve_bolum)
 
     eklenenler = sanitize_eklenenler(raw_eklenenler)
-    template_context["eklenenler"] = eklenenler
-
     if not eklenenler:
         flash("En az bir gecerli senaryo ekleyin.", "warning")
-        return render_template("index.html", **template_context)
+        return render_analysis_template(student_email=student_email, adsoyad=adsoyad_ve_bolum, eklenenler=eklenenler)
 
     if len(raw_eklenenler) > MAX_PARAMETER_COUNT:
         flash(
@@ -846,8 +801,8 @@ def index():
     else:
         student_name = adsoyad_ve_bolum
         requested_department = ""
-    student_email = get_student_email()
     ranking_summary = build_ranking_summary(eklenenler)
+    active_data_path = get_active_data_file_setting()
 
     started_at = time.perf_counter()
     try:
@@ -882,7 +837,21 @@ def index():
         )
         if not results:
             flash("Sonuc bulunamadi.", "warning")
-        return redirect(url_for("rapor", analysis_id=analysis_id))
+        return render_analysis_template(
+            student_email=student_email,
+            adsoyad=adsoyad_ve_bolum,
+            eklenenler=eklenenler,
+            result=results,
+            download_url=url_for("indir", analysis_id=analysis_id),
+            result_meta={
+                "analysis_id": analysis_id,
+                "created_at": utcnow_iso(),
+                "duration_ms": duration_ms,
+                "row_count": len(results),
+                "download_count": 0,
+                "source_file": source_file,
+            },
+        )
     except Exception as exc:
         duration_ms = int((time.perf_counter() - started_at) * 1000)
         try:
@@ -909,33 +878,51 @@ def index():
             {"analysis_id": analysis_id, "student_email": student_email, "error": str(exc)},
         )
         flash("Veri dosyasi okunamadi: {}".format(exc), "danger")
-        return render_template("index.html", **template_context)
+        return render_analysis_template(student_email=student_email, adsoyad=adsoyad_ve_bolum, eklenenler=eklenenler)
+
+
+@app.get("/analiz")
+def analyze_redirect():
+    return redirect(url_for("index"))
+
+
+@app.get("/oturum-gecici")
+def ephemeral_entry():
+    return redirect(url_for("index"))
+
+
+@app.get("/giris")
+def student_login():
+    return redirect(url_for("index"))
+
+
+@app.get("/cikis")
+def student_logout():
+    return redirect(url_for("index"))
 
 
 @app.get("/rapor/<analysis_id>")
-@student_email_required
 def rapor(analysis_id):
+    return redirect(url_for("index"))
+
+
+@app.get("/admin/rapor/<analysis_id>")
+@admin_required
+def admin_report(analysis_id):
     row = get_analysis(analysis_id)
     if row is None:
         abort(404)
-    if row["student_email"] != get_student_email():
-        flash("Bu rapor baska bir mail adresine ait.", "warning")
-        return redirect(url_for("index"))
     if row["status"] != "success":
         flash("Bu rapor olusturulamadi.", "danger")
-        return redirect(url_for("index"))
+        return redirect(url_for("admin_dashboard"))
     return render_template("index.html", **build_report_context(row))
 
 
 @app.get("/indir/<analysis_id>")
-@student_email_required
 def indir(analysis_id):
     row = get_analysis(analysis_id)
     if row is None or row["status"] != "success":
         abort(404)
-    if row["student_email"] != get_student_email():
-        flash("Bu dosya baska bir mail adresine ait.", "warning")
-        return redirect(url_for("index"))
 
     results = decompress_results(row["result_blob"])
     output = generate_excel(row, results)
@@ -1028,6 +1015,12 @@ def admin_dashboard():
         elif action == "cleanup":
             maybe_cleanup(force=True)
             flash("Eski log ve rapor kayitlari temizlendi.", "success")
+        elif action == "purge_all_data":
+            with get_db_connection() as connection:
+                connection.execute("DELETE FROM download_events")
+                connection.execute("DELETE FROM analysis_runs")
+                connection.execute("DELETE FROM app_logs")
+            flash("Tum log ve rapor verileri silindi.", "success")
 
     metrics = get_admin_metrics()
     cache_status = get_cache_status()

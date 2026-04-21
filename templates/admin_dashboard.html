@@ -137,6 +137,10 @@
                             <input type="hidden" name="action" value="cleanup">
                             <button type="submit" class="btn btn-outline-secondary btn-sm">Eski Kay&#305;tlar&#305; Temizle</button>
                         </form>
+                        <form method="post">
+                            <input type="hidden" name="action" value="purge_all_data">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">T&uuml;m Verileri Temizle</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -185,7 +189,7 @@
                                     <td>{{ row.student_email }}</td>
                                     <td>{{ row.student_name or row.student_input }}</td>
                                     <td>{{ row.ranking_summary }}</td>
-                                    <td><a href="{{ url_for('rapor', analysis_id=row.id) }}" target="_blank">{{ row.id[:8] }}</a></td>
+                                    <td><a href="{{ url_for('admin_report', analysis_id=row.id) }}" target="_blank">{{ row.id[:8] }}</a></td>
                                     <td>{{ row.result_count }}</td>
                                     <td>{{ row.duration_ms }} ms</td>
                                     <td>{{ row.source_file }}</td>
@@ -224,7 +228,7 @@
                                     <td>{{ row.student_email }}</td>
                                     <td>{{ row.student_name }}</td>
                                     <td>{{ row.ranking_summary }}</td>
-                                    <td><a href="{{ url_for('rapor', analysis_id=row.analysis_id) }}" target="_blank">{{ row.analysis_id[:8] }}</a></td>
+                                    <td><a href="{{ url_for('admin_report', analysis_id=row.analysis_id) }}" target="_blank">{{ row.analysis_id[:8] }}</a></td>
                                     <td>{{ row.filename }}</td>
                                     <td>{{ row.row_count }}</td>
                                 </tr>
