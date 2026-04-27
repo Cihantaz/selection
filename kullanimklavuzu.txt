@@ -1,75 +1,67 @@
 ===============================================
-         TERCIH ROBOTU - KULLANIM KILAVUZU
+        TERCIH ROBOTU - KULLANIM KILAVUZU
 ===============================================
 
-Bu dokuman, Tercih Robotu'nun temel hesaplama mantigini
-ve kullanim seklini aciklar.
+Bu dokuman, Tercih Robotu'nun kullanim akisini
+ve mevcut analiz mantigini aciklar.
 
 ===============================================
-1. TEMEL KAVRAMLAR
+1. GIRIS
 ===============================================
 
-- Ogr_Siralama : Ogrencinin YKS siralamasi
-- Sinir        : Ogrencinin kac sira geriye gidebilecegi
-- Z            : Hesaplanan alt sinir degeri
-
-FORMUL:
---------
-Z = Ogr_Siralama - Sinir
+- Uygulamaya mail adresiniz ve telefon numaraniz ile giris yaparsiniz.
+- Bu bilgiler admin panelinde kayit altina alinir.
+- Mail dogrulamasi yapilmaz.
 
 ===============================================
-2. ETIKETLEME MANTIGI
+2. GIRDI ALANLARI
 ===============================================
 
-🟢 UYGUN   : Bolum Taban Siralamasi >= Ogr_Siralama
-              (Ogrencinin dogrudan uygun oldugu alan)
+Analiz ekraninda her senaryo icin su alanlar doldurulur:
 
-🟡 RISKLI  : Z <= Bolum Taban Siralamasi < Ogr_Siralama
-              (Sinir dahilinde kalan alan)
+- Ogrenci Adi Soyadi ve gerekirse bolum
+- Siralama
+- Puan Turu
+- Sinir
 
-❌ LISTELENMEZ: Bolum Taban Siralamasi < Z
-              (Sinirin altinda kaldigi icin listede yer almaz)
-
-===============================================
-3. ORNEK SENARYOLAR
-===============================================
-
-------------------------------------------------
-SENARYO 1: Sinir = 0
-------------------------------------------------
-Ogrenci: 100.000 siralamali SAY ogrencisi
-
-HESAPLAMA:
-Z = 100.000 - 0 = 100.000
-
-SONUCLAR:
-- Bolum Siralamasi 100.000+  -> Uygun
-- Bolum Siralamasi 100.000 alti -> Listelenmez
-
-------------------------------------------------
-SENARYO 2: Sinir = 25.000
-------------------------------------------------
-Ogrenci: 100.000 siralamali SAY ogrencisi
-
-HESAPLAMA:
-Z = 100.000 - 25.000 = 75.000
-
-SONUCLAR:
-- Bolum Siralamasi 100.000+ -> Uygun
-- Bolum Siralamasi 75.000-99.999 -> Riskli
-- Bolum Siralamasi 75.000 alti -> Listelenmez
+Not:
+- Ayrica bir "Riskli Sinir" alani yoktur.
+- Sadece "Sinir" degeri kullanilir.
 
 ===============================================
-4. KULLANIM TAVSIYELERI
+3. HESAPLAMA MANTIGI
 ===============================================
 
-1. SINIR = 0 kullanin:
-   - Daha dar ve daha net bir liste icin
-   - Sadece dogrudan uygun alanlari gormek icin
+Temel formul:
 
-2. SINIR > 0 kullanin:
-   - Daha genis bir alternatif havuzu icin
-   - Risk alinabilecek alanlari da gormek icin
+Alt Limit = Ogrenci Siralamasi - Sinir
+
+Sonuclar su sekilde etiketlenir:
+
+- Uygun:
+  Bolum taban siralamasi ogrenci siralamasina esit veya daha yuksekse.
+
+- Riskli:
+  Bolum taban siralamasi alt limit ile ogrenci siralamasi arasindaysa.
+
+- Uygunsuz:
+  Bolum taban siralamasi alt limitin altindaysa.
+
+===============================================
+4. KULLANIM ONERISI
+===============================================
+
+- Sinir = 0 girerseniz daha dar ve dogrudan bir liste elde edersiniz.
+- Sinir degerini artirirsaniz alternatif bolum havuzu genisler.
+- Birden fazla senaryo ekleyerek farkli puan turlerini ayni analizde gorebilirsiniz.
+
+===============================================
+5. SONUCLAR
+===============================================
+
+- Analiz sonuclari ekranda tablo olarak gosterilir.
+- Sonuc varsa Excel olarak indirilebilir.
+- Giris, analiz ve indirme aksiyonlari admin panelinde loglanir.
 
 ===============================================
 Hazirlayan: Tercih Robotu

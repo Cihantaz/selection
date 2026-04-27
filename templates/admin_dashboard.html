@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TercihRobotu Admin Dashboard</title>
+    <title>Tercih Robotu Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -11,7 +11,7 @@
             color: #1c2d41;
         }
         .dashboard {
-            max-width: 1320px;
+            max-width: 1380px;
             margin: 28px auto;
             padding: 0 16px 32px;
         }
@@ -25,7 +25,7 @@
         }
         .metric-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 14px;
             margin-bottom: 20px;
         }
@@ -49,13 +49,16 @@
             font-size: 1.6rem;
             font-weight: 800;
         }
-        .table-wrap {
-            overflow: auto;
-        }
         .panel-title {
             margin-bottom: 14px;
             font-size: 1rem;
             font-weight: 800;
+        }
+        .table-wrap {
+            overflow: auto;
+        }
+        .status-badge {
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -63,8 +66,8 @@
     <div class="dashboard">
         <div class="hero d-flex flex-wrap justify-content-between gap-3 align-items-end">
             <div>
-                <h1 class="h2 mb-2">TercihRobotu Admin</h1>
-                <p class="mb-0 text-white-50">Aktif veri setini, rapor trafi&#287;ini ve sistem loglar&#305;n&#305; buradan y&ouml;netirsiniz.</p>
+                <h1 class="h2 mb-2">Tercih Robotu Admin</h1>
+                <p class="mb-0 text-white-50">Ogrenci girisleri, analizler, indirmeler ve olay akisi bu panelde tutulur.</p>
             </div>
             <div class="d-flex flex-wrap gap-2">
                 <a href="{{ url_for('index') }}" class="btn btn-light btn-sm">Ana Sayfa</a>
@@ -84,24 +87,28 @@
 
         <div class="metric-grid">
             <div class="metric-card">
+                <span class="metric-label">Toplam Ogrenci</span>
+                <div class="metric-value">{{ metrics.total_students }}</div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Toplam Giris</span>
+                <div class="metric-value">{{ metrics.total_logins }}</div>
+            </div>
+            <div class="metric-card">
                 <span class="metric-label">Toplam Analiz</span>
                 <div class="metric-value">{{ metrics.total_analyses }}</div>
             </div>
             <div class="metric-card">
-                <span class="metric-label">Bug&uuml;n</span>
+                <span class="metric-label">Bugun Analiz</span>
                 <div class="metric-value">{{ metrics.analyses_today }}</div>
             </div>
             <div class="metric-card">
-                <span class="metric-label">Toplam &#304;ndirme</span>
+                <span class="metric-label">Toplam Indirme</span>
                 <div class="metric-value">{{ metrics.total_downloads }}</div>
             </div>
             <div class="metric-card">
-                <span class="metric-label">Hata Kayd&#305;</span>
-                <div class="metric-value">{{ metrics.total_errors }}</div>
-            </div>
-            <div class="metric-card">
-                <span class="metric-label">Ortalama S&uuml;re</span>
-                <div class="metric-value">{{ "%.0f"|format(metrics.avg_duration_ms) }} ms</div>
+                <span class="metric-label">Ortalama Sure</span>
+                <div class="metric-value">{{ '%.0f'|format(metrics.avg_duration_ms) }} ms</div>
             </div>
         </div>
 
@@ -112,7 +119,7 @@
                     <form method="post" class="row g-2 align-items-end">
                         <input type="hidden" name="action" value="set_data_file">
                         <div class="col-md-8">
-                            <label class="form-label">Se&ccedil;ili veri dosyas&#305;</label>
+                            <label class="form-label">Secili veri dosyasi</label>
                             <select class="form-select" name="active_data_file">
                                 {% for item in available_data_files %}
                                 <option value="{{ item }}" {% if item == active_data_file %}selected{% endif %}>{{ item }}</option>
@@ -124,9 +131,9 @@
                         </div>
                     </form>
                     <div class="mt-3 small text-secondary">
-                        Cache: <strong>{{ cache_status.path or 'yok' }}</strong><br>
-                        Sat&#305;r: <strong>{{ cache_status.row_count }}</strong><br>
-                        Y&uuml;klenme: <strong>{{ cache_status.loaded_at or 'hen&uuml;z yok' }}</strong>
+                        Cache dosyasi: <strong>{{ cache_status.path or 'yok' }}</strong><br>
+                        Satir: <strong>{{ cache_status.row_count }}</strong><br>
+                        Yuklenme: <strong>{{ cache_status.loaded_at or 'hen?z yok' }}</strong>
                     </div>
                     <div class="d-flex flex-wrap gap-2 mt-3">
                         <form method="post">
@@ -135,36 +142,130 @@
                         </form>
                         <form method="post">
                             <input type="hidden" name="action" value="cleanup">
-                            <button type="submit" class="btn btn-outline-secondary btn-sm">Eski Kay&#305;tlar&#305; Temizle</button>
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">Eski Kayitlari Temizle</button>
                         </form>
                         <form method="post">
                             <input type="hidden" name="action" value="purge_all_data">
-                            <button type="submit" class="btn btn-outline-danger btn-sm">T&uuml;m Verileri Temizle</button>
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Tum Verileri Temizle</button>
                         </form>
                     </div>
                 </div>
             </div>
-
             <div class="col-lg-6">
                 <div class="panel h-100">
-                    <div class="panel-title">Sistem Notlar&#305;</div>
-                    <ul class="mb-3">
-                        <li>Veri dosyas&#305; Excel cache ile bellekte tutulur; her istekte yeniden okunmaz.</li>
-                        <li>Rapor sonu&ccedil;lar&#305; art&#305;k cookie yerine veritaban&#305;nda saklan&#305;r.</li>
-                        <li>&#304;ndirmeler rapor kimli&#287;i ile tekrar &uuml;retilir ve loglan&#305;r.</li>
-                        <li>Log saklama: {{ log_retention_days }} g&uuml;n, rapor saklama: {{ report_retention_days }} g&uuml;n.</li>
-                    </ul>
-                    <div class="small text-secondary">
-                        Veritaban&#305; yolu: <strong>{{ database_path }}</strong><br>
-                        Admin ortam&#305; haz&#305;r: <strong>{{ 'evet' if admin_credentials_ready else 'hayir' }}</strong>
+                    <div class="panel-title">Sistem Bilgisi</div>
+                    <div class="small text-secondary mb-3">
+                        Veritabani yolu: <strong>{{ database_path }}</strong><br>
+                        Admin ortami hazir: <strong>{{ 'evet' if admin_credentials_ready else 'hayir' }}</strong><br>
+                        Log saklama: <strong>{{ log_retention_days }} gun</strong><br>
+                        Rapor saklama: <strong>{{ report_retention_days }} gun</strong>
                     </div>
+                    <ul class="mb-0">
+                        <li>Mail ve telefon ile giris yapan ogrenciler analiz yapmasa da kaydedilir.</li>
+                        <li>Analiz, indirme ve senaryo aksiyonlari ogrenci bazli olay akisina yazilir.</li>
+                        <li>Son ad soyad, siralama ve puan turu o ogrencinin son analizinden gelir.</li>
+                    </ul>
                 </div>
             </div>
         </div>
 
+        <div class="panel mb-3">
+            <div class="panel-title">Ogrenci Ozeti</div>
+            <div class="table-wrap">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Son Islem</th>
+                            <th>Mail</th>
+                            <th>Telefon</th>
+                            <th>Dil</th>
+                            <th>Ad Soyad / Bolum</th>
+                            <th>Siralama</th>
+                            <th>Puan Turu</th>
+                            <th>Durum</th>
+                            <th>Giris</th>
+                            <th>Analiz</th>
+                            <th>Indirme</th>
+                            <th>Son Rapor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in metrics.recent_students %}
+                        <tr>
+                            <td>{{ row.last_seen_at }}</td>
+                            <td>{{ row.student_email }}</td>
+                            <td>{{ row.student_phone or '-' }}</td>
+                            <td>{{ row.preferred_language|upper }}</td>
+                            <td>{{ row.last_student_name or row.last_student_input or '-' }}</td>
+                            <td>{{ row.last_ranking_summary or '-' }}</td>
+                            <td>{{ row.last_score_types_summary or '-' }}</td>
+                            <td><span class="badge text-bg-secondary status-badge">{{ row.status_label }}</span></td>
+                            <td>{{ row.login_count }}</td>
+                            <td>{{ row.analysis_count }}</td>
+                            <td>{{ row.download_count }}</td>
+                            <td>
+                                {% if row.last_analysis_id %}
+                                <a href="{{ url_for('admin_report', analysis_id=row.last_analysis_id) }}" target="_blank">{{ row.last_analysis_id[:8] }}</a>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="12" class="text-secondary">Henuz ogrenci kaydi yok.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel mb-3">
+            <div class="panel-title">Ogrenci Olay Akisi</div>
+            <div class="table-wrap">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Zaman</th>
+                            <th>Mail</th>
+                            <th>Telefon</th>
+                            <th>Olay</th>
+                            <th>Durum</th>
+                            <th>Ad Soyad / Bolum</th>
+                            <th>Siralama</th>
+                            <th>Puan Turu</th>
+                            <th>Rapor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in metrics.recent_student_events %}
+                        <tr>
+                            <td>{{ row.created_at }}</td>
+                            <td>{{ row.student_email }}</td>
+                            <td>{{ row.student_phone or '-' }}</td>
+                            <td>{{ row.event_label }}</td>
+                            <td>{{ row.status }}</td>
+                            <td>{{ row.student_name or row.student_input or '-' }}</td>
+                            <td>{{ row.ranking_summary or '-' }}</td>
+                            <td>{{ row.score_types_summary or '-' }}</td>
+                            <td>
+                                {% if row.analysis_id %}
+                                <a href="{{ url_for('admin_report', analysis_id=row.analysis_id) }}" target="_blank">{{ row.analysis_id[:8] }}</a>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="9" class="text-secondary">Henuz olay kaydi yok.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <div class="row g-3">
-            <div class="col-12">
-                <div class="panel">
+            <div class="col-lg-7">
+                <div class="panel h-100">
                     <div class="panel-title">Son Analizler</div>
                     <div class="table-wrap">
                         <table class="table table-sm align-middle mb-0">
@@ -172,14 +273,13 @@
                                 <tr>
                                     <th>Zaman</th>
                                     <th>Mail</th>
+                                    <th>Telefon</th>
                                     <th>Ad Soyad</th>
                                     <th>Siralama</th>
+                                    <th>Puan Turu</th>
                                     <th>Rapor</th>
-                                    <th>Sonu&ccedil;</th>
-                                    <th>S&uuml;re</th>
-                                    <th>Kaynak</th>
-                                    <th>Durum</th>
-                                    <th>&#304;ndirme</th>
+                                    <th>Sonuc</th>
+                                    <th>Indirme</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -187,61 +287,23 @@
                                 <tr>
                                     <td>{{ row.created_at }}</td>
                                     <td>{{ row.student_email }}</td>
+                                    <td>{{ row.student_phone or '-' }}</td>
                                     <td>{{ row.student_name or row.student_input }}</td>
-                                    <td>{{ row.ranking_summary }}</td>
+                                    <td>{{ row.ranking_summary or '-' }}</td>
+                                    <td>{{ row.score_types_summary or '-' }}</td>
                                     <td><a href="{{ url_for('admin_report', analysis_id=row.id) }}" target="_blank">{{ row.id[:8] }}</a></td>
                                     <td>{{ row.result_count }}</td>
-                                    <td>{{ row.duration_ms }} ms</td>
-                                    <td>{{ row.source_file }}</td>
-                                    <td>{{ row.status }}</td>
                                     <td>{{ row.download_count }}</td>
                                 </tr>
                                 {% else %}
-                                <tr><td colspan="10" class="text-secondary">Hen&uuml;z analiz yok.</td></tr>
+                                <tr><td colspan="9" class="text-secondary">Henuz analiz yok.</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-
-            <div class="col-lg-6">
-                <div class="panel h-100">
-                    <div class="panel-title">Son &#304;ndirmeler</div>
-                    <div class="table-wrap">
-                        <table class="table table-sm align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Zaman</th>
-                                    <th>Mail</th>
-                                    <th>Ad Soyad</th>
-                                    <th>Siralama</th>
-                                    <th>Rapor</th>
-                                    <th>Dosya</th>
-                                    <th>Sat&#305;r</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for row in metrics.recent_downloads %}
-                                <tr>
-                                    <td>{{ row.created_at }}</td>
-                                    <td>{{ row.student_email }}</td>
-                                    <td>{{ row.student_name }}</td>
-                                    <td>{{ row.ranking_summary }}</td>
-                                    <td><a href="{{ url_for('admin_report', analysis_id=row.analysis_id) }}" target="_blank">{{ row.analysis_id[:8] }}</a></td>
-                                    <td>{{ row.filename }}</td>
-                                    <td>{{ row.row_count }}</td>
-                                </tr>
-                                {% else %}
-                                <tr><td colspan="7" class="text-secondary">Hen&uuml;z indirme yok.</td></tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-6">
+            <div class="col-lg-5">
                 <div class="panel h-100">
                     <div class="panel-title">Son Loglar</div>
                     <div class="table-wrap">
@@ -263,7 +325,7 @@
                                     <td>{{ row.message }}</td>
                                 </tr>
                                 {% else %}
-                                <tr><td colspan="4" class="text-secondary">Hen&uuml;z log yok.</td></tr>
+                                <tr><td colspan="4" class="text-secondary">Henuz log yok.</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>

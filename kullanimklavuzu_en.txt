@@ -1,0 +1,69 @@
+===============================================
+          PREFERENCE ROBOT - USER GUIDE
+===============================================
+
+This document explains the current workflow and
+analysis logic of Preference Robot.
+
+===============================================
+1. LOGIN
+===============================================
+
+- You enter the application with your email address and phone number.
+- This information is stored in the admin panel.
+- No email verification is performed.
+
+===============================================
+2. INPUT FIELDS
+===============================================
+
+For each scenario, the analysis screen uses:
+
+- Student full name and department if needed
+- Ranking
+- Score Type
+- Limit
+
+Note:
+- There is no separate "Risk Limit" field.
+- Only the "Limit" value is used.
+
+===============================================
+3. CALCULATION LOGIC
+===============================================
+
+Base formula:
+
+Lower Limit = Student Ranking - Limit
+
+Results are labeled as follows:
+
+- Eligible:
+  The program base ranking is equal to or higher than the student's ranking.
+
+- Stretch:
+  The program base ranking is between the lower limit and the student's ranking.
+
+- Not Listed:
+  The program base ranking is below the lower limit.
+
+===============================================
+4. USAGE NOTES
+===============================================
+
+- If you enter Limit = 0, you get a narrower and more direct list.
+- If you increase the Limit value, the pool of alternative programs expands.
+- You can add multiple scenarios to review different score types in one analysis.
+
+===============================================
+5. RESULTS
+===============================================
+
+- Analysis results are shown in a table.
+- If results exist, they can be downloaded as Excel.
+- Login, analysis and download actions are logged in the admin panel.
+
+===============================================
+Prepared by: Tercih Robotu
+Date: 2026
+===============================================
