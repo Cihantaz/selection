@@ -42,12 +42,21 @@
             gap: 12px;
             margin-bottom: 18px;
         }
+        .consent-box {
+            background: #f6f9fc;
+            border: 1px solid rgba(22, 50, 75, 0.08);
+            border-radius: 16px;
+            padding: 14px 16px;
+        }
+        .consent-box a {
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
     <div class="login-shell">
         <div class="login-card">
-            <img src="{{ url_for('static', filename='iu.logo.png') }}" alt="I??k ?niversitesi Logo" class="brand-logo">
+            <img src="{{ url_for('static', filename='iu.logo.png') }}" alt="Isik Universitesi Logo" class="brand-logo">
             <div class="guide-row">
                 <a href="{{ url_for('kullanim_klavuzu', lang=lang) }}" target="_blank" class="guide-link">{{ t["guide_button"] }}</a>
                 <div class="w-auto">
@@ -83,6 +92,24 @@
                 <div class="mb-4">
                     <label for="phone" class="form-label">{{ t["phone_label"] }}</label>
                     <input type="text" id="phone" name="phone" value="{{ phone }}" class="form-control" placeholder="{{ t['phone_placeholder'] }}" required>
+                </div>
+                <div class="mb-4 consent-box">
+                    <div class="form-check">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            value="on"
+                            id="privacy_consent"
+                            name="privacy_consent"
+                            {% if privacy_consent %}checked{% endif %}
+                            required
+                        >
+                        <label class="form-check-label" for="privacy_consent">
+                            {{ t["privacy_consent_prefix"] }}
+                            <a href="https://www.isikun.edu.tr/ik/kisisel-verilerin-korunmasina-yonelik-aydinlatma-ve-gizlilik-politikamiz" target="_blank" rel="noopener noreferrer">{{ t["privacy_consent_link_text"] }}</a>
+                            {{ t["privacy_consent_suffix"] }}
+                        </label>
+                    </div>
                 </div>
                 <div class="d-grid">
                     <button type="submit" class="btn btn-primary btn-lg">{{ t["continue_button"] }}</button>

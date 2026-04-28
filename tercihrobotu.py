@@ -58,6 +58,9 @@ TEXTS = {
         "email_placeholder": "ornek@mail.com",
         "phone_label": "Telefon numaranızı giriniz",
         "phone_placeholder": "05xx xxx xx xx",
+        "privacy_consent_prefix": "KVKK kapsamında kişisel verilerimin işlenmesine ilişkin",
+        "privacy_consent_link_text": "Aydınlatma Metni’ni",
+        "privacy_consent_suffix": "okudum ve kabul ediyorum.",
         "continue_button": "Devam Et",
         "home_button": "Ana Sayfa",
         "guide_button": "Kullanım Kılavuzu",
@@ -79,6 +82,7 @@ TEXTS = {
         "fill_required": "Sıralama, Puan Türü ve Sınır alanlarını doldurun.",
         "invalid_email": "Geçerli bir mail adresi girin.",
         "invalid_phone": "Telefon numarası girin.",
+        "invalid_privacy_consent": "Aydınlatma Metni onay kutusunu işaretleyin.",
         "invalid_session": "Giriş bilgileri geçerli değil, tekrar girin.",
         "invalid_scenarios": "Senaryo listesi okunamadı.",
         "no_scenario": "En az bir geçerli senaryo ekleyin.",
@@ -116,6 +120,9 @@ TEXTS = {
         "email_placeholder": "example@mail.com",
         "phone_label": "Enter your phone number",
         "phone_placeholder": "+90 5xx xxx xx xx",
+        "privacy_consent_prefix": "I have read and accept the",
+        "privacy_consent_link_text": "Clarification Text",
+        "privacy_consent_suffix": "regarding the processing of my personal data under KVKK.",
         "continue_button": "Continue",
         "home_button": "Home",
         "guide_button": "User Guide",
@@ -137,6 +144,7 @@ TEXTS = {
         "fill_required": "Fill in the Ranking, Score Type and Limit fields.",
         "invalid_email": "Enter a valid email address.",
         "invalid_phone": "Enter a phone number.",
+        "invalid_privacy_consent": "Select the clarification text consent checkbox.",
         "invalid_session": "Login information is invalid. Please start again.",
         "invalid_scenarios": "Scenario list could not be read.",
         "no_scenario": "Add at least one valid scenario.",
@@ -1246,10 +1254,12 @@ def index():
             t=texts,
             email="",
             phone="",
+            privacy_consent=False,
         )
 
     student_email = request.form.get("email", "").strip().lower()
     student_phone = normalize_phone(request.form.get("phone", ""))
+    privacy_consent = request.form.get("privacy_consent") == "on"
     if not is_valid_email(student_email):
         flash(texts["invalid_email"], "danger")
         return render_template(
@@ -1258,6 +1268,7 @@ def index():
             t=texts,
             email=student_email,
             phone=student_phone,
+            privacy_consent=privacy_consent,
         )
     if not student_phone:
         flash(texts["invalid_phone"], "danger")
@@ -1267,6 +1278,17 @@ def index():
             t=texts,
             email=student_email,
             phone=student_phone,
+            privacy_consent=privacy_consent,
+        )
+    if not privacy_consent:
+        flash(texts["invalid_privacy_consent"], "danger")
+        return render_template(
+            "student_login.html",
+            lang=lang,
+            t=texts,
+            email=student_email,
+            phone=student_phone,
+            privacy_consent=privacy_consent,
         )
 
     record_student_event(
@@ -1274,7 +1296,7 @@ def index():
         "login",
         student_phone=student_phone,
         language=lang,
-        details={"ip": get_client_ip()},
+        details={"ip": get_client_ip(), "privacy_consent": True},
     )
     log_event(
         "INFO",
