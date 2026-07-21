@@ -41,7 +41,7 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 APP_ROOT = Path(app.root_path)
 INSTANCE_DIR = APP_ROOT / "instance"
 INSTANCE_DIR.mkdir(exist_ok=True)
-DEFAULT_DATA_FILE = Path("data") / "23_24_isik.xlsx"
+DEFAULT_DATA_FILE = Path("26-27_isik.xlsx")
 DATABASE_PATH = Path(os.environ.get("DATABASE_PATH", str(INSTANCE_DIR / "tercihrobotu.db")))
 if not DATABASE_PATH.is_absolute():
     DATABASE_PATH = APP_ROOT / DATABASE_PATH
@@ -976,7 +976,7 @@ def get_dataset():
         if _dataset_cache["key"] == cache_key and _dataset_cache["data"] is not None:
             return _dataset_cache["data"], display_path
 
-    dataframe = pd.read_excel(absolute_path)
+    dataframe = pd.read_excel(absolute_path, sheet_name="Sayfa1")
     dataframe = prepare_dataframe(dataframe)
 
     with _dataset_lock:
