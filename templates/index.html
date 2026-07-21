@@ -130,18 +130,18 @@
                 <input type="hidden" name="eklenenler" id="eklenenler_json">
 
                 <div class="mb-3">
-                    <label for="adsoyad" class="form-label">{{ t["student_name_label"] }}</label>
-                    <input type="text" id="adsoyad" name="adsoyad" value="{{ adsoyad }}" class="form-control" placeholder="{{ t['student_name_placeholder'] }}">
+                    <label for="adsoyad" class="form-label fs-5 fw-medium">{{ t["student_name_label"] }}</label>
+                    <input type="text" id="adsoyad" name="adsoyad" value="{{ adsoyad }}" class="form-control fs-5" placeholder="{{ t['student_name_placeholder'] }}">
                 </div>
 
                 <div class="row g-3 align-items-end">
                     <div class="col-md-4">
-                        <label for="puan" class="form-label">{{ t["ranking_label"] }}</label>
-                        <input type="text" id="puan" class="form-control">
+                        <label for="puan" class="form-label fs-5 fw-medium">{{ t["ranking_label"] }}</label>
+                        <input type="text" id="puan" class="form-control fs-5">
                     </div>
                     <div class="col-md-4">
-                        <label for="tur" class="form-label">{{ t["score_type_label"] }}</label>
-                        <select id="tur" class="form-select">
+                        <label for="tur" class="form-label fs-5 fw-medium">{{ t["score_type_label"] }}</label>
+                        <select id="tur" class="form-select fs-5">
                             <option value="SAY">SAY</option>
                             <option value="EA">EA</option>
                             <option value="SÖZ">SÖZ</option>
@@ -149,8 +149,8 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label for="sinir" class="form-label">{{ t["limit_label"] }}</label>
-                        <input type="number" id="sinir" class="form-control" min="0">
+                        <label for="sinir" class="form-label fs-5 fw-medium">{{ t["limit_label"] }}</label>
+                        <input type="number" id="sinir" class="form-control fs-5" min="0">
                     </div>
                     <div class="col-12 d-flex justify-content-end">
                         <button type="button" class="btn btn-outline-primary" onclick="eklePuan()">{{ t["scenario_add"] }}</button>
