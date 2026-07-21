@@ -1047,6 +1047,7 @@ def analiz_yap(df, eklenenler, lang):
         sinir_int = temizle_sayi(parameter["sinir"])
         z_degeri = ogr_siralama_int - sinir_int
         alt_limit = z_degeri
+        goster_alt_sinir = alt_limit - 10000
 
         filtered = df
         if parameter["tur"]:
@@ -1058,6 +1059,9 @@ def analiz_yap(df, eklenenler, lang):
 
         for frame in (main_rows, missing_rows):
             for row in frame.to_dict("records"):
+                taban_num = row.get("__taban_siralama_numeric")
+                if taban_num is not None and taban_num < goster_alt_sinir:
+                    continue
                 unique_key = (
                     parameter["tur"],
                     parameter["puan"],
@@ -1071,6 +1075,7 @@ def analiz_yap(df, eklenenler, lang):
                 results.append(build_result_row(row, parameter, ogr_siralama_int, alt_limit, lang))
 
     return results
+
 
 
 def compress_results(results):
