@@ -36,6 +36,9 @@ from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "exam_secret_key")
+app.config["SESSION_COOKIE_SECURE"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
 APP_ROOT = Path(app.root_path)
@@ -107,10 +110,8 @@ TEXTS = {
         "table_scholarship": "Burs Oranı",
         "table_base_ranking": "Taban Sıralama",
         "table_base_score": "Taban Puan",
-        "table_ceiling_score": "Tavan Puan",
         "table_fee": "Ücret",
         "table_language": "Dil",
-        "table_quota": "Kontenjan",
         "table_status": "Etiket",
         "status_eligible": "Uygun",
         "status_risky": "Riskli",
@@ -172,10 +173,8 @@ TEXTS = {
         "table_scholarship": "Scholarship",
         "table_base_ranking": "Base Ranking",
         "table_base_score": "Base Score",
-        "table_ceiling_score": "Top Score",
         "table_fee": "Tuition",
         "table_language": "Language",
-        "table_quota": "Quota",
         "table_status": "Status",
         "status_eligible": "Eligible",
         "status_risky": "Stretch",
@@ -192,10 +191,8 @@ TABLE_HEADER_KEYS = [
     ("burs_orani", "table_scholarship"),
     ("taban_siralama", "table_base_ranking"),
     ("taban_puan", "table_base_score"),
-    ("tavan_puan", "table_ceiling_score"),
     ("ucret", "table_fee"),
     ("dil", "table_language"),
-    ("kontenjan", "table_quota"),
     ("etiket", "table_status"),
 ]
 
@@ -1035,10 +1032,8 @@ def build_result_row(row, parameter, ogr_siralama_int, alt_limit, lang):
         "burs_orani": translate_burs_orani(row.get("__burs_orani", ""), lang),
         "taban_siralama": row.get("En D\u00fc\u015f\u00fck S\u0131ralama", ""),
         "taban_puan": row.get("Taban Puan", ""),
-        "tavan_puan": row.get("Tavan Puan", ""),
         "ucret": row.get("__ucret_formatted", ""),
         "dil": row.get("__dil", "TR"),
-        "kontenjan": row.get("__kontenjan", ""),
         "etiket": localize_status(status_key, lang),
     }
 
@@ -1303,16 +1298,14 @@ def generate_pdf(row, results):
         table_data.append([Paragraph(str(item.get(key, "")), cell_style) for key, _ in get_table_headers(lang)])
 
     col_widths = {
-        "bolum_adi": 160,
-        "puan_turu": 48,
-        "burs_orani": 65,
-        "taban_siralama": 65,
-        "taban_puan": 55,
-        "tavan_puan": 55,
-        "ucret": 60,
-        "dil": 38,
-        "kontenjan": 50,
-        "etiket": 65,
+        "bolum_adi": 175,
+        "puan_turu": 50,
+        "burs_orani": 70,
+        "taban_siralama": 70,
+        "taban_puan": 60,
+        "ucret": 70,
+        "dil": 40,
+        "etiket": 70,
     }
     widths = [col_widths.get(key, 70) for key, _ in get_table_headers(lang)]
 
