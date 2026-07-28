@@ -1838,7 +1838,7 @@ def admin_export(table_name):
     if table_name not in allowed_tables:
         return "Geçersiz tablo", 400
         
-    with get_db() as connection:
+    with get_db_transaction() as connection:
         cursor = connection.cursor()
         cursor.execute(f"SELECT * FROM {table_name}")
         rows = cursor.fetchall()
