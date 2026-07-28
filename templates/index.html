@@ -123,7 +123,7 @@
 
         <div class="panel">
             <div class="section-title">{{ t["form_intro"] }}</div>
-            <form method="post" action="{{ url_for('analyze') }}" id="analysisForm">
+            <form method="post" action="{{ url_for('analyze') }}" id="analysisForm" onsubmit="return validateForm()">
                 <input type="hidden" name="student_email" value="{{ student_email }}">
                 <input type="hidden" name="student_phone" value="{{ student_phone }}">
                 <input type="hidden" name="lang" value="{{ lang }}">
@@ -131,7 +131,7 @@
 
                 <div class="mb-3">
                     <label for="adsoyad" class="form-label fs-5 fw-medium">{{ t["student_name_label"] }}</label>
-                    <input type="text" id="adsoyad" name="adsoyad" value="{{ adsoyad }}" class="form-control fs-5" placeholder="{{ t['student_name_placeholder'] }}">
+                    <input type="text" id="adsoyad" name="adsoyad" value="{{ adsoyad }}" class="form-control fs-5" placeholder="{{ t['student_name_placeholder'] }}" required>
                 </div>
 
                 <div class="row g-3 align-items-end">
@@ -248,6 +248,14 @@
 
         function currentStudentInput() {
             return document.getElementById('adsoyad').value.trim();
+        }
+
+        function validateForm() {
+            if (eklenenler.length === 0) {
+                alert("Lütfen en az bir Sıralama ve Puan Türü (Senaryo) ekleyin.");
+                return false;
+            }
+            return true;
         }
 
         function logStudentAction(eventType, details) {

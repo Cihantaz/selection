@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -54,7 +54,7 @@
             font-size: 1rem;
             font-weight: 800;
         }
-        .table-wrap {
+        .table-responsive {
             overflow: auto;
         }
         .status-badge {
@@ -70,7 +70,7 @@
                 <p class="mb-0 text-white-50">Ogrenci girisleri, analizler, indirmeler ve olay akisi bu panelde tutulur.</p>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                <a href="{{ url_for('index') }}" class="btn btn-light btn-sm">Öğrenci Girişi</a>
+                <a href="{{ url_for('index') }}" class="btn btn-light btn-sm">Ã–ÄŸrenci GiriÅŸi</a>
                 <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-light btn-sm">Oturumu Kapat</a>
             </div>
         </div>
@@ -133,7 +133,7 @@
                     <div class="mt-3 small text-secondary">
                         Cache dosyasi: <strong>{{ cache_status.path or 'yok' }}</strong><br>
                         Satir: <strong>{{ cache_status.row_count }}</strong><br>
-                        Yuklenme: <strong>{{ cache_status.loaded_at or 'henüz yok' }}</strong>
+                        Yuklenme: <strong>{{ cache_status.loaded_at or 'henÃ¼z yok' }}</strong>
                     </div>
                     <div class="d-flex flex-wrap gap-2 mt-3">
                         <form method="post">
@@ -163,10 +163,10 @@
                     <div class="mt-4">
                         <strong class="d-block mb-2">Verileri Indir (CSV)</strong>
                         <div class="d-flex flex-wrap gap-2">
-                            <a href="{{ url_for('admin_export', table_name='student_profiles') }}" class="btn btn-outline-success btn-sm">Öğrenci Kayıtları</a>
+                            <a href="{{ url_for('admin_export', table_name='student_profiles') }}" class="btn btn-outline-success btn-sm">Ã–ÄŸrenci KayÄ±tlarÄ±</a>
                             <a href="{{ url_for('admin_export', table_name='analysis_runs') }}" class="btn btn-outline-success btn-sm">Analizler</a>
-                            <a href="{{ url_for('admin_export', table_name='download_events') }}" class="btn btn-outline-success btn-sm">Rapor İndirmeleri</a>
-                            <a href="{{ url_for('admin_export', table_name='app_logs') }}" class="btn btn-outline-success btn-sm">Sistem Logları</a>
+                            <a href="{{ url_for('admin_export', table_name='download_events') }}" class="btn btn-outline-success btn-sm">Rapor Ä°ndirmeleri</a>
+                            <a href="{{ url_for('admin_export', table_name='app_logs') }}" class="btn btn-outline-success btn-sm">Sistem LoglarÄ±</a>
                         </div>
                     </div>
                     <ul class="mb-0 mt-3">
@@ -179,49 +179,35 @@
         </div>
 
         <div class="panel mb-3">
-            <div class="panel-title">Ogrenci Ozeti</div>
-            <div class="table-wrap">
+            <div class="panel-title">Ã–ÄŸrenci Ã–zeti</div>
+            <div class="table-responsive">
                 <table class="table table-sm align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Son Islem</th>
                             <th>Mail</th>
                             <th>Telefon</th>
-                            <th>Dil</th>
                             <th>Ad Soyad / Bolum</th>
                             <th>Siralama</th>
                             <th>Puan Turu</th>
-                            <th>Durum</th>
-                            <th>Giris</th>
-                            <th>Analiz</th>
-                            <th>Indirme</th>
-                            <th>Son Rapor</th>
+                            <th>Giris Sayisi</th>
+                            <th>Analiz Sayisi</th>
+                            <th>Indirme Sayisi</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for row in metrics.recent_students %}
                         <tr>
-                            <td>{{ row.last_seen_at }}</td>
                             <td>{{ row.student_email }}</td>
                             <td>{{ row.student_phone or '-' }}</td>
-                            <td>{{ row.preferred_language|upper }}</td>
                             <td>{{ row.last_student_name or row.last_student_input or '-' }}</td>
                             <td>{{ row.last_ranking_summary or '-' }}</td>
                             <td>{{ row.last_score_types_summary or '-' }}</td>
-                            <td><span class="badge text-bg-secondary status-badge">{{ row.status_label }}</span></td>
                             <td>{{ row.login_count }}</td>
                             <td>{{ row.analysis_count }}</td>
                             <td>{{ row.download_count }}</td>
-                            <td>
-                                {% if row.last_analysis_id %}
-                                <a href="{{ url_for('admin_report', analysis_id=row.last_analysis_id) }}" target="_blank">{{ row.last_analysis_id[:8] }}</a>
-                                {% else %}
-                                -
-                                {% endif %}
-                            </td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="12" class="text-secondary">Henuz ogrenci kaydi yok.</td></tr>
+                        <tr><td colspan="8" class="text-secondary">Henuz ogrenci kaydi yok.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -229,8 +215,8 @@
         </div>
 
         <div class="panel mb-3">
-            <div class="panel-title">Ogrenci Olay Akisi</div>
-            <div class="table-wrap">
+            <div class="panel-title">TÃ¼m Ä°ÅŸlem KayÄ±tlarÄ± (DetaylÄ± Log)</div>
+            <div class="table-responsive">
                 <table class="table table-sm align-middle mb-0">
                     <thead class="table-light">
                         <tr>
@@ -276,7 +262,7 @@
             <div class="col-lg-7">
                 <div class="panel h-100">
                     <div class="panel-title">Son Analizler</div>
-                    <div class="table-wrap">
+                    <div class="table-responsive">
                         <table class="table table-sm align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
@@ -315,7 +301,7 @@
             <div class="col-lg-5">
                 <div class="panel h-100">
                     <div class="panel-title">Son Loglar</div>
-                    <div class="table-wrap">
+                    <div class="table-responsive">
                         <table class="table table-sm align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
@@ -345,3 +331,4 @@
     </div>
 </body>
 </html>
+
