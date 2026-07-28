@@ -1862,6 +1862,20 @@ def admin_export(table_name):
         headers={"Content-Disposition": f"attachment;filename={table_name}.csv"}
     )
 
+@app.route("/admin/upload_db", methods=["POST"])
+@admin_required
+def admin_upload_db():
+    file = request.files.get("db_file")
+    if file and file.filename.endswith('.db'):
+        try:
+            file.save(DATABASE_PATH)
+            flash("Eski veritabanı başarıyla yüklendi ve aktarıldı!", "success")
+        except Exception as e:
+            flash(f"Veritabanı yüklenirken hata oluştu: {str(e)}", "danger")
+    else:
+        flash("Geçersiz dosya. Sadece .db dosyası yükleyebilirsiniz.", "danger")
+    return redirect(url_for("admin_dashboard"))
+
 
 @app.route("/admin", methods=["GET", "POST"])
 @admin_required

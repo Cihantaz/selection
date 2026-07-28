@@ -10,7 +10,7 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_PATH
-        value: instance/tercihrobotu.db
+        value: /var/data/tercihrobotu.db
       - key: REPORT_RETENTION_DAYS
         value: 30
       - key: LOG_RETENTION_DAYS

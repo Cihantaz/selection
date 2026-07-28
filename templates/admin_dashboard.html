@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -163,11 +163,19 @@
                     <div class="mt-4">
                         <strong class="d-block mb-2">Verileri Indir (CSV)</strong>
                         <div class="d-flex flex-wrap gap-2">
-                            <a href="{{ url_for('admin_export', table_name='student_profiles') }}" class="btn btn-outline-success btn-sm">Ã–ÄŸrenci KayÄ±tlarÄ±</a>
+                            <a href="{{ url_for('admin_export', table_name='student_profiles') }}" class="btn btn-outline-success btn-sm">Öğrenci Kayıtları</a>
                             <a href="{{ url_for('admin_export', table_name='analysis_runs') }}" class="btn btn-outline-success btn-sm">Analizler</a>
-                            <a href="{{ url_for('admin_export', table_name='download_events') }}" class="btn btn-outline-success btn-sm">Rapor Ä°ndirmeleri</a>
-                            <a href="{{ url_for('admin_export', table_name='app_logs') }}" class="btn btn-outline-success btn-sm">Sistem LoglarÄ±</a>
+                            <a href="{{ url_for('admin_export', table_name='download_events') }}" class="btn btn-outline-success btn-sm">Rapor İndirmeleri</a>
+                            <a href="{{ url_for('admin_export', table_name='app_logs') }}" class="btn btn-outline-success btn-sm">Sistem Logları</a>
                         </div>
+                    </div>
+                    <div class="mt-4 p-3 border rounded bg-light">
+                        <strong class="d-block mb-2 text-danger">Eski Veritabanını Geri Yükle (Restore)</strong>
+                        <form method="post" action="{{ url_for('admin_upload_db') }}" enctype="multipart/form-data" class="d-flex gap-2 align-items-center">
+                            <input type="file" name="db_file" accept=".db" class="form-control form-control-sm" required>
+                            <button type="submit" class="btn btn-danger btn-sm text-nowrap">Yükle ve Değiştir</button>
+                        </form>
+                        <small class="text-muted d-block mt-1">Dikkat: Bilgisayarınıza indirdiğiniz tercihrobotu.db dosyasını seçin. Yüklendiğinde mevcut verilerin üzerine yazılır.</small>
                     </div>
                     <ul class="mb-0 mt-3">
                         <li>Mail ve telefon ile giris yapan ogrenciler analiz yapmasa da kaydedilir.</li>
