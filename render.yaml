@@ -17,3 +17,7 @@ services:
         value: 60
       - key: MAX_PARAMETER_COUNT
         value: 12
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1

@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import csv
 import sqlite3
 import threading
 import time
@@ -30,6 +31,7 @@ from flask import (
     send_file,
     session,
     url_for,
+    Response,
 )
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import check_password_hash
@@ -1826,6 +1828,39 @@ def admin_logout():
     session.pop("is_admin", None)
     flash("Admin oturumu kapatildi.", "info")
     return redirect(url_for("admin_login"))
+
+@app.route("/admin/export/<table_name>")
+def admin_export(table_name):
+    if not session.get("is_admin"):
+        return redirect(url_for("admin_login"))
+        
+    allowed_tables = ["student_profiles", "student_events", "analysis_runs", "download_events", "app_logs"]
+    if table_name not in allowed_tables:
+        return "Geçersiz tablo", 400
+        
+    with get_db() as connection:
+        cursor = connection.cursor()
+        cursor.execute(f"SELECT * FROM {table_name}")
+        rows = cursor.fetchall()
+        
+        if not rows:
+            return "Veri bulunamadı", 404
+            
+        columns = [description[0] for description in cursor.description]
+        
+    si = io.StringIO()
+    cw = csv.writer(si)
+    cw.writerow(columns)
+    for row in rows:
+        cw.writerow(row)
+        
+    output = si.getvalue()
+    
+    return Response(
+        '\ufeff' + output,
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f"attachment;filename={table_name}.csv"}
+    )
 
 
 @app.route("/admin", methods=["GET", "POST"])

@@ -160,7 +160,16 @@
                         Log saklama: <strong>{{ log_retention_days }} gun</strong><br>
                         Rapor saklama: <strong>{{ report_retention_days }} gun</strong>
                     </div>
-                    <ul class="mb-0">
+                    <div class="mt-4">
+                        <strong class="d-block mb-2">Verileri Indir (CSV)</strong>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ url_for('admin_export', table_name='student_profiles') }}" class="btn btn-outline-success btn-sm">Öğrenci Kayıtları</a>
+                            <a href="{{ url_for('admin_export', table_name='analysis_runs') }}" class="btn btn-outline-success btn-sm">Analizler</a>
+                            <a href="{{ url_for('admin_export', table_name='download_events') }}" class="btn btn-outline-success btn-sm">Rapor İndirmeleri</a>
+                            <a href="{{ url_for('admin_export', table_name='app_logs') }}" class="btn btn-outline-success btn-sm">Sistem Logları</a>
+                        </div>
+                    </div>
+                    <ul class="mb-0 mt-3">
                         <li>Mail ve telefon ile giris yapan ogrenciler analiz yapmasa da kaydedilir.</li>
                         <li>Analiz, indirme ve senaryo aksiyonlari ogrenci bazli olay akisina yazilir.</li>
                         <li>Son ad soyad, siralama ve puan turu o ogrencinin son analizinden gelir.</li>
